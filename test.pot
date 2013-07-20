@@ -1,0 +1,28 @@
+(define fib
+  (func (x)
+       (if (< x 0)
+	   "invalid argument to fib()"
+	   (if (= x 1)
+	       0
+	       (if (= x 2)
+		   1
+		   (+ (fib (- x 2))
+		      (fib (- x 1))))))))
+
+(define demo-helper
+   (func (x y)
+      (if (< y 0)
+	  (print "cannot provide negative arguments")
+	  (if (= x y)
+	      (print (fib x))
+	      ((func ()
+		     (print (fib x))
+		     (demo-helper (+ x 1) y)))))))
+
+(define demo
+  (func (x)
+	(print "Inefficient fibonacci demo")
+	(demo-helper 1 x)))
+
+(demo 8)
+; TODO (( prints wrong error message

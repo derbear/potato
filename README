@@ -1,0 +1,21 @@
+POTATO is (almost) a Scheme interpreter written in C for fun and learning in my spare time.
+
+Lots of TODOs:
+
+Near-future
+ * better memory management
+ * better error handling
+ * better error abstractions
+ * better layout of code
+ * documentation
+
+Medium-future
+ * legitimate hash tables
+ * resizeable vector arrays
+ * support for floating-point
+ * file write
+ * macros
+
+Far-future
+ * a working garbage collector
+ * a compiler
