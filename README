@@ -1,5 +1,12 @@
 POTATO is (almost) a Scheme interpreter written in C for fun and learning in my spare time.
 
+`make' to build
+`make clean' to cleanup
+`make dist-source' to bundle all sources for distribution
+
+`./main' to run
+`./main [filename]' to execute a file
+
 Lots of TODOs:
 
 Near-future
