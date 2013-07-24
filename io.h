@@ -14,6 +14,10 @@
 
 #include "data.h"
 
+/**
+ * Until arbitrary-length symbols are supported, this macro indicates the
+ * maximum character-length of a symbol.
+ */
 #define MAX_SYMBOL_SIZE 100
 
 /**

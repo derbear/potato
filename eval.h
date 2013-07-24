@@ -6,6 +6,10 @@
 
 #include "data.h"
 
+/**
+ * Lookup tables which map strings to objects and have a pointer to parent
+ * lookup tables (which is NULL if it doesn't have one).
+ */
 struct table;
 
 /**

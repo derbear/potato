@@ -4,6 +4,9 @@
 #ifndef GLOBALS_H_INCLUDED
 #define GLOBALS_H_INCLUDED
 
+/**
+ * Set this to a non-zero value to print more information.
+ */
 #define DEBUG 1
 
 /**
