@@ -1,4 +1,4 @@
-CFLAGS=-Wall -std=c99 -g
+CFLAGS=-Wall -std=c99 -g -Werror
 OBJECTS=eval.o io.o util.o globals.o data.o builtins.o main.o
 all: main
 
