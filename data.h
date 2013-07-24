@@ -20,8 +20,23 @@ struct cell {
   struct obj* first, * rest;
 }; // @heap
 
+/**
+ * Create on the heap a cell with a first and second argument.
+ */
 struct cell* make_cell(struct obj* first, struct obj* rest);
+
+/**
+ * Create on the heap an object with the given type and data.
+ *
+ * The object's data should point to somewhere on the heap unless otherwise
+ * guaranteed to be safe.
+ */
 struct obj* make_object(obj_type type, void* data);
-struct obj* make_error(char* data);
+
+/**
+ * Convenience function to create an error object, copying the given argument
+ * to memory given by malloc().
+ */
+struct obj* make_error(char* error_message);
 
 #endif
