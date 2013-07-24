@@ -25,12 +25,16 @@ struct obj* make_object(obj_type type, void* data) {
 
 struct obj* make_error(char* data) {
   struct obj* err = make_object(ERROR, 0);
-  if (DEBUG) print_obj(err);
+  if (DEBUG) {
+    print_obj(err);
+  }
   if (!data) return err;
 
   char* copy = malloc(str_len(data) + 1);
   str_cpy(data, copy);
   err->data = copy;
-  if (DEBUG) print_obj(err);
+  if (DEBUG) {
+    print_obj(err);
+  }
   return err;
 }

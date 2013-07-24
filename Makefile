@@ -17,7 +17,7 @@ clean:
 main.o: globals.h eval.h builtins.h main.c
 eval.o: data.h globals.h util.h data.h io.h eval.h eval.c
 builtins.o: builtins.h data.h globals.h util.h io.h eval.h builtins.c
-io.o: util.h data.h io.h io.c
+io.o: util.h data.h io.h io.c ioplus.c iobasic.c
 util.o: util.h util.c
 globals.o: globals.h globals.c
 data.o: data.h data.c
