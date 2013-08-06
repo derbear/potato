@@ -164,7 +164,12 @@ s_token make_token_quoted(char first, struct reader* r) {
 
 void consume_line(struct reader* r) {
   char c;
-  while ((c = reader_pop(r)) != '\n');
+  while ((c = reader_pop(r)) != '\n') {
+    if (c == -1) {
+      reader_push(r, c);
+      return;
+    }
+  }
 }
 
 s_token next_token(struct reader* r) {
