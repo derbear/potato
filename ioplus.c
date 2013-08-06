@@ -1,6 +1,7 @@
 // ********** Derek Leung
 // ********** File I/O and parsing - with more features
 
+#define _GNU_SOURCE // TODO we'll remove this once we remove asprintf
 #include <stdio.h>
 #include <stdlib.h>
 
