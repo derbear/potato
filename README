@@ -12,9 +12,10 @@ Lots of TODOs:
 Near-future
  * better memory management
  * better error handling
- * better error abstractions
+ * better error abstractions (error type, stack-unwind)
  * better layout of code
  * documentation
+ * tests
 
 Medium-future
  * legitimate hash tables
@@ -26,3 +27,6 @@ Medium-future
 Far-future
  * a working garbage collector
  * a compiler
+
+Bugs/problems:
+ * (( is weird

@@ -5,6 +5,9 @@ all: main
 run: main
 	./main
 
+test: main
+	./main test.pot
+
 dist-source:
 	tar -czf sources.tar.gz builtins.h data.h eval.h globals.h io.h util.h builtins.c data.c eval.c globals.c io.c ioplus.c iobasic.c main.c util.c test.pot Makefile README
 

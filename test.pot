@@ -25,4 +25,3 @@
 	(demo-helper 1 x)))
 
 (demo 8)
-; TODO (( prints wrong error message
