@@ -20,6 +20,11 @@ struct cell {
   struct obj* first, * rest;
 }; // @heap
 
+struct primitive {
+  struct obj* (*c_func)(struct obj*);
+  char* name;
+}; // @heap 
+
 /**
  * Create on the heap a cell with a first and second argument.
  */

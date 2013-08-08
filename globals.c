@@ -3,6 +3,8 @@
 
 #include "globals.h"
 
+#include <stdlib.h>
+
 #include "io.h"
 #include "builtins.h"
 #include "eval.h"
@@ -10,28 +12,35 @@
 struct reader* stdin_reader;
 struct table* global_table;
 
+void register_primitive(char* name, struct obj* (*func)(struct obj*)) {
+  struct primitive* wrapped = malloc(sizeof(struct primitive));
+  wrapped->c_func = func;
+  wrapped->name = name;
+  bind(global_table, name, make_object(PRIMITIVE, wrapped));
+}
+
 void initialize() {
   global_table = make_table(0, 50);
   stdin_reader = make_reader(stdin);
 
-  bind(global_table, "list", make_object(PRIMITIVE, &list));
-  bind(global_table, "+", make_object(PRIMITIVE, &add));
-  bind(global_table, "-", make_object(PRIMITIVE, &sub));
-  bind(global_table, "*", make_object(PRIMITIVE, &mul));
-  bind(global_table, "//", make_object(PRIMITIVE, &floor_div));
-  bind(global_table, "=", make_object(PRIMITIVE, &equals));
-  bind(global_table, "<", make_object(PRIMITIVE, &lessthan));
-  bind(global_table, "quote", make_object(PRIMITIVE, &quote));
-  bind(global_table, "first", make_object(PRIMITIVE, &first));
-  bind(global_table, "rest", make_object(PRIMITIVE, &rest));
-  bind(global_table, "cons", make_object(PRIMITIVE, &construct));
-  bind(global_table, "define", make_object(PRIMITIVE, &define));
-  bind(global_table, "func", make_object(PRIMITIVE, &function));
-  bind(global_table, "if", make_object(PRIMITIVE, &ifelse));
-  bind(global_table, "eval", make_object(PRIMITIVE, &builtin_eval));
-  bind(global_table, "apply", make_object(PRIMITIVE, &builtin_apply));
-  bind(global_table, "read", make_object(PRIMITIVE, &builtin_read));
-  bind(global_table, "print", make_object(PRIMITIVE, &builtin_print));
-  bind(global_table, "open", make_object(PRIMITIVE, &file_open));
-  bind(global_table, "exec", make_object(PRIMITIVE, &execute));
+  register_primitive("list", &list);
+  register_primitive("+", &add);
+  register_primitive("-", &sub);
+  register_primitive("*", &mul);
+  register_primitive("//", &floor_div);
+  register_primitive("=", &equals);
+  register_primitive("<", &lessthan);
+  register_primitive("quote", &quote);
+  register_primitive("first", &first);
+  register_primitive("rest", &rest);
+  register_primitive("cons", &construct);
+  register_primitive("define", &define);
+  register_primitive("func", &function);
+  register_primitive("if", &ifelse);
+  register_primitive("eval", &builtin_eval);
+  register_primitive("apply", &builtin_apply);
+  register_primitive("read", &builtin_read);
+  register_primitive("print", &builtin_print);
+  register_primitive("open", &file_open);
+  register_primitive("exec", &execute);
 }

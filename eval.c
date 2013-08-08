@@ -104,7 +104,7 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
     operand = list(operand);
     if (operand->type == ERROR) return operand;
 
-    global_table = make_table(global_table, 10);
+    global_table = make_table(global_table, 10); // TODO use real local frames
     while (params->type != NIL) {
       struct cell* curr = params->data;
       struct cell* opstep = operand->data;
@@ -125,8 +125,9 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
   }
 
   if (operator->type == PRIMITIVE) {
-    struct obj* (*primitive)(struct obj*) = operator->data;
-    return (*primitive) (operand);
+    struct primitive* wrapper = operator->data;
+    struct obj* (*raw_func)(struct obj*) = wrapper->c_func;
+    return (*raw_func) (operand);
   }
   return make_error("cannot call object");
 }
@@ -144,6 +145,9 @@ struct obj* real_evaluate(struct obj* obj) {
   case CELL:
     cell = obj->data;
     operator = evaluate(cell->first);
+    if (operator->type == ERROR) {
+      return operator;
+    }
     return apply(operator, cell->rest);
   case STREAM:
     return obj;
@@ -165,7 +169,7 @@ struct obj* evaluate(struct obj* obj) {
   static int nesting = 0;
   if (nesting > HARD_NESTING_LIMIT) {
     nesting = 0;
-    return make_error("exceeded function nesting limit");
+    return make_error("exceeded call stack limit");
   }
 
   nesting++;

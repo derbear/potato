@@ -27,6 +27,3 @@ Medium-future
 Far-future
  * a working garbage collector
  * a compiler
-
-Bugs/problems:
- * (( is weird
