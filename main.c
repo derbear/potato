@@ -17,9 +17,11 @@ int main(int argc, char* argv[]) {
       printf("ERROR: cannot open file \"%s\"\n", argv[1]);
       return 1;
     }
-    struct obj* str = make_object(STREAM, make_reader(f));
+    fclose(f);
+    
+    struct obj* str = make_object(LITERAL, argv[1]);
     struct obj* arg = make_object(CELL, make_cell(str, make_object(NIL, 0)));
-    struct obj* result = execute(arg);
+    struct obj* result = load(arg);
     if (result->type == NIL) {
       return 0;
     }

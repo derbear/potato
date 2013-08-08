@@ -274,25 +274,6 @@ struct obj* ifelse(struct obj* operand) {
   }
 }
 
-struct obj* file_open(struct obj* operand) { // TODO allow modes r, rw, etc.
-  if (list_len(operand) != 1) {
-    return make_error("<OPEN> requires exactly one argument");
-  }
-  operand = list(operand);
-  struct cell* arg = operand->data;
-  if (arg->first->type != LITERAL) {
-    return make_error("<OPEN> requires a string argument");
-  }
-
-  char* name = arg->first->data;
-  FILE* target = fopen(name, "r");
-  if (!target) {
-    return make_error("failed to open file");
-  }
-
-  return make_object(STREAM, make_reader(target));
-}
-
 struct obj* builtin_eval(struct obj* operand) {
   if (list_len(operand) != 1) {
     return make_error("<EVAL> requires exactly one argument");
@@ -345,21 +326,31 @@ struct obj* builtin_print(struct obj* operand) {
   return make_error("stream print not yet supported");
 }
 
-struct obj* execute(struct obj* operand) {
+struct obj* load(struct obj* operand) {
   if (list_len(operand) != 1) {
-    return make_error("<EXEC> takes one argument");
+    return make_error("<LOAD> takes one arg");
   }
   operand = list(operand);
-  struct cell* arg = operand->data;
-  if (arg->first->type != STREAM) {
-    return make_error("<EXEC> takes a stream argument");
+
+  struct cell* extract = operand->data;
+  if (extract->first->type != LITERAL) {
+    return make_error("<LOAD> takes a string arg");
   }
-  struct reader* stream = arg->first->data;
+  char* filename = extract->first->data;
+  FILE* f = fopen(filename, "r");
+  struct reader* r = make_reader(f);
   struct obj* next;
-  while ((next = evaluate(next_object(stream)))->type != DONE) {
+  while ((next = next_object(r))) {
+    if (next->type == DONE) {
+      fclose(f); // TODO implement reader destroy
+      return make_object(NIL, 0);
+    }
+    next = evaluate(next);
     if (next->type == ERROR) {
       return next;
     }
   }
-  return make_object(NIL, 0);
+
+  printf("ERROR IN <LOAD>\n"); // should never reach here
+  exit(1);
 }

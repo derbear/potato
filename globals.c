@@ -41,6 +41,5 @@ void initialize() {
   register_primitive("apply", &builtin_apply);
   register_primitive("read", &builtin_read);
   register_primitive("print", &builtin_print);
-  register_primitive("open", &file_open);
-  register_primitive("exec", &execute);
+  register_primitive("load", &load);
 }
