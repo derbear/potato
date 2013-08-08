@@ -94,11 +94,6 @@ struct obj* function(struct obj* operand);
 struct obj* ifelse(struct obj* operand);
 
 /**
- * Opens a file, returning a file stream object.
- */
-struct obj* file_open(struct obj* operand);
-
-/**
  * Evaluates the first argument.
  */
 struct obj* builtin_eval(struct obj* operand);
@@ -122,8 +117,8 @@ struct obj* builtin_read(struct obj* operand);
 struct obj* builtin_print(struct obj* operand);
 
 /**
- * Given a stream, executes the contents of a file until EOF.
+ * Opens and executes the contents of a file.
  */
-struct obj* execute(struct obj* operand);
+struct obj* load(struct obj* operand);
 
 #endif
