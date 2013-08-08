@@ -13,7 +13,7 @@ typedef enum {
 
 struct obj {
   obj_type type;
-  void* data; // @heap
+  void* data; // @heap // TODO reduce numerical storage requirements?
 }; // @heap
 
 struct cell {
