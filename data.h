@@ -9,6 +9,7 @@ typedef enum {
   ERROR = 0,
   SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION,
   LITERAL, STREAM,
+  EXTENSION, // for extensions
 } obj_type;
 
 struct obj {

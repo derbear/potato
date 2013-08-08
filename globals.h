@@ -4,6 +4,8 @@
 #ifndef GLOBALS_H_INCLUDED
 #define GLOBALS_H_INCLUDED
 
+#include "data.h"
+
 /**
  * Set this to a non-zero value to print more information.
  */
@@ -23,5 +25,10 @@ extern struct table* global_table;
  * Initializes the global namespace and other global objects.
  */
 void initialize(void);
+
+/**
+ * Register a primitive function to the global namespace.
+ */
+void register_primitive(char* name, struct obj* (*func)(struct obj*));
 
 #endif

@@ -1,2 +1,7 @@
 (print 'program-arguments)
 (print program-arguments)
+
+(define opaque-stream (c-fopen "test.pot" "r"))
+(print (c-fgetc opaque-stream))
+(c-fclose opaque-stream)
+

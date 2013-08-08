@@ -14,6 +14,8 @@
 #include "eval.h"
 #include "io.h"
 
+#include "extensions.h"
+
 #define STARTUP_FILE "startup.pot"
 
 // flattens a cell-linked list into an array; returns null ptr if NIL
@@ -48,6 +50,11 @@ struct obj* unflatten(struct obj** array, int size) {
 }
 
 int bootstrap(int argc, char* argv[]) {
+  register_primitive("c-fopen", &ext_bind_stdio_fopen);
+  register_primitive("c-fclose", &ext_bind_stdio_fclose);
+  register_primitive("c-fgetc", &ext_bind_stdio_fgetc);
+  register_primitive("c-fputc", &ext_bind_stdio_fputc);
+  
   struct obj** translated = malloc(sizeof(struct obj*) * argc);
   for (int i = 0; i < argc; i++) {
     translated[i] = make_object(LITERAL, argv[i]); // TODO is this safe?
