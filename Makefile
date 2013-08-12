@@ -21,7 +21,9 @@ clean:
 main.o: globals.h eval.h builtins.h main.c ext_bind_stdio.c
 eval.o: data.h globals.h util.h data.h io.h eval.h eval.c
 builtins.o: builtins.h data.h globals.h util.h io.h eval.h builtins.c
-io.o: util.h data.h io.h io.c ioplus.c iobasic.c
-util.o: util.h util.c
+io.o: util.h data.h io.h io.c
+util.o: util.h util.c data.h eval.h
 globals.o: globals.h globals.c
 data.o: data.h data.c
+
+extensions.o: ext_bind_stdio.c

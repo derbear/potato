@@ -23,6 +23,13 @@ struct obj* make_object(obj_type type, void* data) {
   return object;
 }
 
+struct obj* make_small_object(obj_type type, int data) {
+  struct obj* object = malloc(sizeof(struct obj));
+  object->type = type;
+  object->number = data;
+  return object;
+}
+
 struct obj* make_error(char* data) {
   struct obj* err = make_object(ERROR, 0);
   if (DEBUG) {

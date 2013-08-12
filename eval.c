@@ -71,8 +71,7 @@ int list_len(struct obj* obj) { // neg return if malformed
   if (obj->type != CELL) {
     return -1;
   }
-  struct cell* cell = obj->data;
-  int ret = list_len(cell->rest);
+  int ret = list_len(obj->cell->rest);
   if (ret < 0) return ret;
   else return ret+1;
 }
@@ -83,9 +82,8 @@ struct obj* list(struct obj* operand) { // this doubles as a shortcut for evalua
   } else if (operand->type != CELL) {
     return make_error("malformed arguments passed to <LIST>");
   }
-  struct cell* cell = operand->data;
-  struct obj* first = evaluate(cell->first);
-  struct obj* rest = list(cell->rest);
+  struct obj* first = evaluate(operand->cell->first);
+  struct obj* rest = list(operand->cell->rest);
   if (first->type == ERROR) return first;
   else if (rest->type == ERROR) return rest;
   return make_object(CELL, make_cell(first, rest));
@@ -93,9 +91,8 @@ struct obj* list(struct obj* operand) { // this doubles as a shortcut for evalua
 
 struct obj* apply(struct obj* operator, struct obj* operand) {
   if (operator->type == FUNCTION) {
-    struct cell* opdef = operator->data;
-    struct obj* params = opdef->first;
-    struct obj* procedure = opdef->rest;
+    struct obj* params = operator->cell->first;
+    struct obj* procedure = operator->cell->rest;
     if (list_len(params) != list_len(operand)) {
       return make_error("function called with incorrect number "
 			 "of parameters");
@@ -106,19 +103,16 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
 
     global_table = make_table(global_table, 10); // TODO use real local frames
     while (params->type != NIL) {
-      struct cell* curr = params->data;
-      struct cell* opstep = operand->data;
-      struct obj* symbol = curr->first;
-      bind(global_table, symbol->data, opstep->first);
-      operand = opstep->rest;
-      params = curr->rest;
+      struct obj* symbol = params->cell->first;
+      bind(global_table, symbol->string, operand->cell->first);
+      operand = operand->cell->rest;
+      params = params->cell->rest;
     }
 
     struct obj* ret = make_object(NIL, 0);
     while (procedure->type != NIL) {
-      struct cell* subexpr = procedure->data;
-      ret = evaluate(subexpr->first);
-      procedure = subexpr->rest;
+      ret = evaluate(procedure->cell->first);
+      procedure = procedure->cell->rest;
     }
     global_table = global_table->parent;
     return ret;
@@ -134,21 +128,19 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
 
 struct obj* real_evaluate(struct obj* obj) {
   struct obj* operator;
-  struct cell* cell;
 
   switch(obj->type) {
   case NUMBER:
   case LITERAL:
     return obj;
   case SYMBOL:
-    return lookup(global_table, obj->data);
+    return lookup(global_table, obj->string);
   case CELL:
-    cell = obj->data;
-    operator = evaluate(cell->first);
+    operator = evaluate(obj->cell->first);
     if (operator->type == ERROR) {
       return operator;
     }
-    return apply(operator, cell->rest);
+    return apply(operator, obj->cell->rest);
   case STREAM:
     return obj;
   case NIL:
@@ -179,19 +171,17 @@ struct obj* evaluate(struct obj* obj) {
 }
 
 void print_list(struct obj* object) {
-  struct cell* cell;
-  cell = object->data;
   if (object->type == NIL) {
     printf(")");
-  } else if (cell->rest->type != CELL &&
-	     cell->rest->type != NIL) {
-    print_obj(cell->first);
+  } else if (object->cell->rest->type != CELL &&
+	     object->cell->rest->type != NIL) {
+    print_obj(object->cell->first);
     printf(" . ");
-    print_obj(cell->rest);
+    print_obj(object->cell->rest);
     printf(")");
   } else {
-    print_obj(cell->first);
-    object = cell->rest;
+    print_obj(object->cell->first);
+    object = object->cell->rest;
     if (object->type != NIL)
       printf(" ");
     print_list(object);
@@ -201,7 +191,7 @@ void print_list(struct obj* object) {
 void print_obj(struct obj* obj) {
   switch(obj->type) {
   case NUMBER:
-    printf("%d", *((int*) obj->data));
+    printf("%d", obj->number);
     break;
   case SYMBOL:
     printf("%s", (char*) obj->data);

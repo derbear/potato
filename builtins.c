@@ -1,9 +1,9 @@
 // ********** Derek Leung
 // ********** Built-in primitive operators
 
-#include <stdlib.h>
-
 #include "builtins.h"
+
+#include <stdlib.h>
 
 #include "eval.h"
 #include "data.h"
@@ -12,232 +12,126 @@
 #include "io.h"
 
 struct obj* add(struct obj* operand) {
-  int sum = 0;
-  struct cell* curr;
-
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-
-  while (operand->type != NIL) {
-    curr = operand->data;
-    if (curr->first->type != NUMBER) {
-      return make_error("cannot <ADD> non-numbers");
-    }
-    sum += *((int*) curr->first->data);
-    operand = curr->rest;
+  obj_type types[] = {NUMBER, NUMBER};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
   }
-
-  int* value = malloc(sizeof(int));
-  *value = sum;
-  return make_object(NUMBER, value);
+  int result = processed[0]->number + processed[1]->number;
+  return make_small_object(NUMBER, result);
 }
 
 struct obj* sub(struct obj* operand) {
-  struct cell* curr;
-
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-
-  if (list_len(operand) == 0) {
-    return make_error("must <SUB> at least one number");
+  obj_type types[] = {NUMBER, NUMBER};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
   }
-
-  curr = operand->data;
-  int diff = *((int*) curr->first->data);
-  if (list_len(operand) == 1) {
-    int* ret = malloc(sizeof(int));
-    *ret = diff * -1;
-    return make_object(NUMBER, ret);
-  }
-
-  operand = curr->rest;
-  while (operand->type != NIL) {
-    curr = operand->data;
-    if (curr->first->type != NUMBER) {
-      return make_error("cannot <SUB> non-numbers");
-    }
-    diff -= *((int*) curr->first->data);
-    operand = curr->rest;
-  }
-
-  int* value = malloc(sizeof(int));
-  *value = diff;
-  return make_object(NUMBER, value);
+  int result = processed[0]->number - processed[1]->number;
+  return make_small_object(NUMBER, result);
 }
 
 struct obj* mul(struct obj* operand) {
-  int product = 1;
-  struct cell* curr;
-
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-
-  while (operand->type != NIL) {
-    curr = operand->data;
-    if (curr->first->type != NUMBER) {
-      return make_error("cannot <MUL> non-numbers");
-    }
-    product *= *((int*) curr->first->data);
-    operand = curr->rest;
+  obj_type types[] = {NUMBER, NUMBER};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
   }
-
-  int* value = malloc(sizeof(int));
-  *value = product;
-  return make_object(NUMBER, value);
+  int result = processed[0]->number * processed[1]->number;
+  return make_small_object(NUMBER, result);
 }
 
 struct obj* floor_div(struct obj* operand) {
-  struct cell* curr;
-
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-
-  if (list_len(operand) == 0) {
-    return make_error("must <FLOORDIV> at least one number");
+  obj_type types[] = {NUMBER, NUMBER};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
   }
-
-  curr = operand->data;
-  int quot = *((int*) curr->first->data);
-  if (list_len(operand) == 1) {
-    int* ret = malloc(sizeof(int));
-    if (!quot) {
-      return make_error("attempted to divide by zero");
-    }
-    *ret = 1 / quot;
-    return make_object(NUMBER, ret);
+  if (processed[1]->number == 0) {
+    return make_error("attempted to divide by zero");
   }
-
-  operand = curr->rest;
-  while (operand->type != NIL) {
-    curr = operand->data;
-    if (curr->first->type != NUMBER) {
-      return make_error("cannot <FLOORDIV> non-numbers");
-    }
-    int div = *((int*) curr->first->data);
-    if (!div) {
-      return make_error("attempted to divide by zero");
-    }
-    quot /= div;
-    operand = curr->rest;
-  }
-
-  int* value = malloc(sizeof(int));
-  *value = quot;
-  return make_object(NUMBER, value);
+  int result = processed[0]->number / processed[1]->number;
+  return make_small_object(NUMBER, result);
 }
 
 struct obj* equals(struct obj* operand) {
-  if (list_len(operand) < 2) {
-    return make_error("must compare at least two objects");
+  obj_type types[] = {NUMBER, NUMBER};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
   }
-  operand = list(operand);
-  struct cell* args = operand->data;
-  struct obj* first = args->first;
-  operand = args->rest;
-  while (operand->type != NIL) {
-    args = operand->data;
-    struct obj* cmp = args->first;
-    if (first->type == NUMBER && cmp->type == NUMBER) {
-      if (*((int*) (first->data)) != *((int*) (cmp->data))) {
-	return make_object(NIL, 0);
-      }
-    } else {
-      return make_error("can only compare numbers");
-    }
-    operand = args->rest;
+  if (processed[0]->number == processed[1]->number) {
+    return processed[0];
+  } else {
+    return make_object(NIL, 0);
   }
-  return first;
 }
 
 struct obj* lessthan(struct obj* operand) {
-  if (list_len(operand) != 2) {
-    return make_error("must compare exactly two objects");
+  obj_type types[] = {NUMBER, NUMBER};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
   }
-  operand = list(operand);
-  struct cell* args = operand->data;
-  struct obj* first = args->first;
-  args = args->rest->data;
-  struct obj* second = args->first;
-  if (first->type != NUMBER && second->type != NUMBER) {
-    return make_error("can only compare numbers");
-  }
-  if (*((int*) (first->data)) < *((int*) (second->data))) {
-    return first;
+  if (processed[0]->number < processed[1]->number) {
+    return processed[0];
   } else {
     return make_object(NIL, 0);
   }
 }
 
 struct obj* first(struct obj* operand) {
-  if (list_len(operand) != 1) {
-    return make_error("<FIRST> accepts exactly one argument");
+  obj_type types[] = {CELL};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  if (!processed) {
+    return operand;
   }
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-
-  struct cell* cell = operand->data;
-  if (cell->first->type != CELL) {
-    return make_error("can only call <FIRST> on a cell");
+  if (processed[0]->type == NIL) {
+    return processed[0];
   }
-  cell = cell->first->data;
-
-  return cell->first;
+  return processed[0]->cell->first;
 }
 
 struct obj* rest(struct obj* operand) {
-  if (list_len(operand) != 1) {
-    return make_error("<REST> accepts exactly one argument");
+  obj_type types[] = {CELL};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  if (!processed) {
+    return operand;
   }
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-
-  struct cell* cell = operand->data;
-  if (cell->first->type != CELL) {
-    return make_error("can only call <REST> on a cell");
+  if (processed[0]->type == NIL) {
+    return processed[0];
   }
-  cell = cell->first->data;
-
-  return cell->rest;
+  return processed[0]->cell->rest;
 }
 
 struct obj* quote(struct obj* operand) {
-  if (operand->type != CELL) {
-    return make_error("malformed arguments passed to <QUOTE>");
+  struct obj** processed = prologue(&operand, 1, 0, 0, 1, 1, 0);
+  if (!processed) {
+    return operand;
   }
-  if (list_len(operand) != 1) {
-    return make_error("<QUOTE> expects exactly one argument");
-  }
-  struct cell* cell = operand->data;
-  return cell->first;
+  return processed[0];
 }
 
 struct obj* construct(struct obj* operand) {
-  if (list_len(operand) != 2) {
-    return make_error("<CONSTRUCT> accepts exactly two arguments");
+  struct obj** processed = prologue(&operand, 1, 0, 1, 1, 2, 0);
+  if (!processed) {
+    return operand;
   }
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-
-  struct cell* one = operand->data;
-  struct cell* two = one->rest->data;
-
-  return make_object(CELL, make_cell(one->first, two->first));
+  return make_object(CELL, make_cell(processed[0], processed[1]));
 }
 
 struct obj* define(struct obj* operand) {
-  if (list_len(operand) != 2) {
-    return make_error("<DEFINE> accepts exactly two arguments");
+  struct obj** processed = prologue(&operand, 1, 0, 0, 1, 2, 0);
+  if (!processed) {
+    return operand;
   }
-
-  struct cell* one = operand->data;
-  if (one->first->type != SYMBOL) {
+  if (processed[0]->type != SYMBOL) {
     return make_error("the first argument passed to "
 		       "<DEFINE> must be a symbol");
   }
-  struct cell* two = one->rest->data;
-  struct obj* value = evaluate(two->first);
-  bind(global_table, (char*) one->first->data, value);
-  return one->first;
+  struct obj* value = evaluate(processed[1]);
+  bind(global_table, processed[0]->string, value);
+  return processed[0];
 }
 
 struct obj* function(struct obj* operand) {
@@ -245,12 +139,11 @@ struct obj* function(struct obj* operand) {
     return make_error("<FUNCTION> requires at least one "
 		       "valid argument");
   }
-  struct cell* funcdef = operand->data;
-  struct obj* params = funcdef->first;
+  struct obj* params = operand->cell->first;
   while (params->type != NIL) {
-    struct cell* curr = params->data;
+    struct cell* curr = params->cell;
     if (curr->first->type != SYMBOL) {
-	return make_error("cannot define functions with non-symbolic parameters");
+	return make_error("cannot define functions with non-symbols");
     }
     params = curr->rest;
   }
@@ -258,40 +151,34 @@ struct obj* function(struct obj* operand) {
 }
 
 struct obj* ifelse(struct obj* operand) {
-  if (list_len(operand) != 3) {
-    return make_error("<IF> requires three arguments");
+  struct obj** processed = prologue(&operand, 1, 0, 0, 1, 3, 0);
+  if (!processed) {
+    return operand;
   }
 
-  struct cell* pred = operand->data;
-  struct cell* cons = pred->rest->data;
-  struct cell* alt = cons->rest->data;
-
-  struct obj* ret = evaluate(pred->first);
+  struct obj* ret = evaluate(processed[0]);
   if (ret->type == NIL) {
-    return evaluate(alt->first);
+    return evaluate(processed[2]);
   } else {
-    return evaluate(cons->first);
+    return evaluate(processed[1]);
   }
 }
 
 struct obj* builtin_eval(struct obj* operand) {
-  if (list_len(operand) != 1) {
-    return make_error("<EVAL> requires exactly one argument");
+  struct obj** processed = prologue(&operand, 1, 0, 1, 1, 1, 0);
+  if (!processed)  {
+    return operand;
   }
-  operand = list(operand);
-  if (operand->type == ERROR) return operand;
-  struct cell* single = operand->data;
-  return evaluate(single->first);
+  return evaluate(processed[0]);
 }
 
 struct obj* builtin_apply(struct obj* operand) {
-  if (list_len(operand) != 2) {
-    return make_error("<APPLY> requires two args");
+  obj_type types0[] = {FUNCTION, CELL};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types0);
+  if (!processed) {
+    return operand;
   }
-  operand = list(operand);
-  struct cell* one = operand->data;
-  struct cell* two = one->rest->data;
-  return apply(one->first, two->first);
+  return apply(processed[0], processed[1]);
 }
 
 struct obj* builtin_read(struct obj* operand) {
@@ -310,34 +197,30 @@ struct obj* builtin_read(struct obj* operand) {
 }
 
 struct obj* builtin_print(struct obj* operand) {
-  if (list_len(operand) != 1 &&
-      list_len(operand) != 2) {
-    return make_error("<PRINT> takes either one or two args");
-  }
-
-  operand = list(operand);
-  struct cell* extract = operand->data;
-  if (list_len(operand) == 1) {
-    print_obj(extract->first);
+  struct obj** processed = prologue(&operand, 1, 0, 1, 1, 1, 0);
+  if (!processed) {
+    // TODO have something else catch exceptions
+    print_obj(operand);
     printf("\n");
-    return extract->first;
+    return operand;
   }
-
-  return make_error("stream print not yet supported");
+  print_obj(processed[0]);
+  printf("\n");
+  return processed[0];
 }
 
 struct obj* load(struct obj* operand) {
-  if (list_len(operand) != 1) {
-    return make_error("<LOAD> takes one arg");
+  obj_type types[] = {LITERAL};
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  if (!processed) {
+    return operand;
   }
-  operand = list(operand);
 
-  struct cell* extract = operand->data;
-  if (extract->first->type != LITERAL) {
-    return make_error("<LOAD> takes a string arg");
-  }
-  char* filename = extract->first->data;
+  char* filename = processed[0]->string;
   FILE* f = fopen(filename, "r");
+  if (!f) {
+    return make_error("file not found");
+  }
   struct reader* r = make_reader(f);
   struct obj* next;
   while ((next = next_object(r))) {

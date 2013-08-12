@@ -13,41 +13,11 @@
 #include "builtins.h"
 #include "eval.h"
 #include "io.h"
+#include "util.h"
 
 #include "extensions.h"
 
 #define STARTUP_FILE "startup.pot"
-
-// flattens a cell-linked list into an array; returns null ptr if NIL
-// throws up if error
-// TODO test this
-struct obj** flatten(struct obj* list) {
-  int length = list_len(list);
-  if (length == 0) {
-    return 0;
-  } else if (length == -1) {
-    printf("Tried to flatten a malformed list\n");
-    exit(1);
-  }
-  struct obj** array = malloc(sizeof(struct obj*) * length);
-  struct cell* current = list->data;
-  int index = 0;
-  while (current->first->type != NIL) {
-    array[index++] = current->first;
-    list = current->rest;
-    current = list->data;
-  }
-  return array;
-}
-
-// inverse of flatten
-struct obj* unflatten(struct obj** array, int size) {
-  struct obj* list = make_object(NIL, 0);
-  while (size > 0) {
-    list = make_object(CELL, make_cell(array[--size], list));
-  }
-  return list;
-}
 
 int bootstrap(int argc, char* argv[]) {
   register_primitive("c-fopen", &ext_bind_stdio_fopen);
@@ -61,14 +31,9 @@ int bootstrap(int argc, char* argv[]) {
   }
   struct obj* arg_values = unflatten(translated, argc);
   bind(global_table, "program-arguments", arg_values);
-  FILE* f = fopen(STARTUP_FILE, "r");
-  if (!f) {
-    printf("ERROR: cannot open startup file \"%s\"", STARTUP_FILE);
-    return 1;
-  }
-  struct obj* str = make_object(STREAM, make_reader(f));
+  struct obj* str = make_object(LITERAL, STARTUP_FILE);
   struct obj* arg = make_object(CELL, make_cell(str, make_object(NIL, 0)));
-  struct obj* result = execute(arg);
+  struct obj* result = load(arg);
   
   if (result->type == NIL) {
     return 0;

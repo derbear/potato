@@ -5,3 +5,8 @@
 (print (c-fgetc opaque-stream))
 (c-fclose opaque-stream)
 
+(define repl (func ()
+    (print (eval (print (read))))
+    (repl)))
+  
+(repl) ; start main loop

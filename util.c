@@ -1,7 +1,14 @@
 // ********** Derek Leung
 // ********** General utilities
 
+#define _GNU_SOURCE // TODO we'll remove this once we remove asprintf
 #include "util.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "data.h"
+#include "eval.h"
 
 int str_contains(char* str, char c) {
   char t;
@@ -35,4 +42,84 @@ void str_cpy(char* src, char* dest) {
     dest++;
   }
   *dest = 0;
+}
+
+struct obj** flatten(struct obj* list, int* size) {
+  int length = list_len(list);
+  if (size) {
+    *size = length;
+  }
+
+  if (length == 0) {
+    return 0;
+  } else if (length == -1) {
+    printf("Tried to flatten a malformed list\n");
+    exit(1);
+  }
+
+  struct obj** array = malloc(sizeof(struct obj*) * length);
+  struct cell* current;
+  int index = 0;
+  while (list->type != NIL) {
+    current = list->data;
+    array[index++] = current->first;
+    list = current->rest;
+  }
+  return array;
+}
+
+struct obj* unflatten(struct obj** array, int size) {
+  struct obj* list = make_object(NIL, 0);
+  while (size > 0) {
+    list = make_object(CELL, make_cell(array[--size], list));
+  }
+  return list;
+}
+
+struct obj** prologue(struct obj** operand,
+		      int is_fixed_length,
+		      int is_strict_typed,
+		      int is_applicative,
+		      int propagates_exceptions,
+		      int num_args,
+		      obj_type* arg_types) {
+  int size;
+  char* fmt = "function requires %d arg(s)";
+  struct obj** flattened = flatten(*operand, &size);
+  char* errorstrptr;
+
+  if (is_fixed_length) {
+    if (size != num_args) {
+      asprintf(&errorstrptr, fmt, num_args);
+      *operand = make_object(ERROR, errorstrptr);
+      return 0;
+    }
+  }
+
+  if (is_applicative) {
+    for (int i = 0; i < size; i++) {
+      flattened[i] = evaluate(flattened[i]);
+      if (propagates_exceptions && flattened[i]->type == ERROR) {
+	*operand = flattened[i];
+	return 0;
+      }
+    }
+  }
+
+  if (is_strict_typed) {
+    for (int i = 0; i < size; i++) {
+      if (flattened[i]->type != arg_types[i]) {
+	// nil is accepted whenever cells are accepted, and
+	// primitives are accepted whenever functions are.
+	if ((flattened[i]->type != NIL && arg_types[i] != CELL) &&
+	    (flattened[i]->type != PRIMITIVE && arg_types[i] != FUNCTION)) {
+	  errorstrptr = "incorrect argument type(s)";
+	  *operand = make_object(ERROR, errorstrptr);
+	  return 0;
+	}
+      }
+    }
+  }
+
+  return flattened;
 }

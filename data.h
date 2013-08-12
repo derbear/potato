@@ -12,9 +12,15 @@ typedef enum {
   EXTENSION, // for extensions
 } obj_type;
 
+struct cell;
 struct obj {
   obj_type type;
-  void* data; // @heap // TODO reduce numerical storage requirements?
+  union {
+    void* data; // @heap
+    int number; // TODO use macros to limit size of this to pointer size
+    char* string;
+    struct cell* cell;
+  };
 }; // @heap
 
 struct cell {
@@ -24,7 +30,7 @@ struct cell {
 struct primitive {
   struct obj* (*c_func)(struct obj*);
   char* name;
-}; // @heap 
+}; // @heap
 
 /**
  * Create on the heap a cell with a first and second argument.
@@ -38,6 +44,13 @@ struct cell* make_cell(struct obj* first, struct obj* rest);
  * guaranteed to be safe.
  */
 struct obj* make_object(obj_type type, void* data);
+
+/**
+ * Same as make_object(), but accepts a numerical data-type.
+ *
+ * Intended for use on things smaller than a pointer.
+ */
+struct obj* make_small_object(obj_type type, int data); // TODO make macro
 
 /**
  * Convenience function to create an error object, copying the given argument
