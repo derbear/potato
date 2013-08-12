@@ -17,9 +17,9 @@
 extern struct reader* stdin_reader;
 
 /**
- * The global lookup table for the global namespace.
+ * The global lookup env for the global namespace.
  */
-extern struct table* global_table;
+extern struct env* global_env;
 
 /**
  * Initializes the global namespace and other global objects.
@@ -29,6 +29,7 @@ void initialize(void);
 /**
  * Register a primitive function to the global namespace.
  */
-void register_primitive(char* name, struct obj* (*func)(struct obj*));
+void register_primitive(char* name, struct obj* (*func)(struct obj*,
+							struct env*));
 
 #endif

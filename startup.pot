@@ -1,7 +1,119 @@
-(print 'program-arguments)
-(print program-arguments)
+;;; List utils
 
-(define opaque-stream (c-fopen "test.pot" "r"))
-(print (c-fgetc opaque-stream))
-(c-fclose opaque-stream)
+(define length
+  (func (list)
+    (if list
+	(+ 1 (length (rest list)))
+	0)))
 
+(define append
+  (func (l1 l2)
+    (if l1
+	(cons (first l1) (append (rest l1) l2))
+	l2)))
+
+(define map
+  (func (f list)
+    (if list
+	(cons (f (first list)) (map f (rest list)))
+	list))) ; nil
+
+;;; Eval utils
+
+;; (define unquotef
+;;   (func (obj)
+;;     (list 'quote (list 'unquote obj))))
+
+;; (define unquote (macro unquotef))
+
+;; (define backquotef
+;;   (func (obj)
+;;     (define dequote
+;;       (func (obj depth)
+;; 	(if (= (first obj) 'unquote)
+;; 	    (if (= depth 1)
+;; 		(eval (first (rest obj))) ; strip unquote, eval
+;; 		(list 'unquote (dequote (first (rest obj)) (- depth 1))))
+;; 	    obj)))
+
+;;     (define backquotefr
+;;       (func (obj depth)
+;; 	(if (= (type obj) 'CELL)
+;; 	    (if (= (first obj) 'unquote)
+;; 		(dequote obj depth)
+;; 		(if (= (first obj) 'backquote)
+;; 		    (cons 'backquote
+;; 			  (list (backquotefr (first (rest obj)) (+ depth 1))))
+;; 		    (cons (backquotefr (first obj) depth)
+;; 			  (backquotefr (rest obj) depth))))
+;; 	    obj)))
+;;     (list 'quote (backquotefr obj 1))))
+
+;; (define backquote (macro backquotef))
+
+;;; Logic and comparators
+
+(define not
+  (func (pred)
+    (if pred
+	nil
+	'true)))
+
+(define andf
+  (func (p1 p2)
+    (list 'if p1
+	  (list 'if p2 ''t nil)
+	  nil)))
+(define and (macro andf))
+
+(define orf
+  (func (p1 p2)
+    (list 'if p1
+	  ''t
+	  (list 'if p2 ''t nil))))
+(define or (macro orf))
+
+(define >
+  (func (a b)
+    (< b a)))
+
+(define <=
+  (func (a b)
+    (or (< a b) (= a b))))
+
+(define >=
+  (func (a b)
+    (or (> a b) (= a b))))
+
+;;; I/O
+
+(define format
+  (func (str dest)
+    (define vector (vector-from-string str))
+    (define vector-len (vector-length vector))
+    (define print-char-at
+      ;; prints character at index
+      (func (vector index)
+	(c-putc dest (vector-index vector index))))
+    (define format-recur
+      (func (vector index)
+	(if (>= index vector-len)
+	    str
+	    ((func ()
+	       (print-char-at vector index)
+	       (format-recur vector (+ index 1)))))))
+    (format-recur vector 0)))
+
+;;; Main code
+
+;; (define repl-closure
+(define repl
+  (func ()
+    ;; (format "> " sys-stdout)
+    (print (eval (read)))
+    (repl)))
+
+
+(if (= 1 (length program-arguments))
+    (repl)
+    (load (first (rest program-arguments))))

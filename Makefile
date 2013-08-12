@@ -1,27 +1,28 @@
 CFLAGS=-Wall -std=c99 -g -Werror
-OBJECTS=eval.o io.o util.o globals.o data.o builtins.o main.o extensions.o
+CORE=eval.o io.o util.o globals.o data.o main.o env.o
+OBJECTS=${CORE} extensions.o
+EXECUTABLE=potato
 
 all: main
 
 run: main
-	./main
+	./${EXECUTABLE}
 
 test: main
-	./main test.pot
-
-dist-source:
-	tar -czf sources.tar.gz builtins.h data.h eval.h globals.h io.h util.h builtins.c data.c eval.c globals.c io.c ioplus.c iobasic.c main.c util.c test.pot startup.pot Makefile README extensions.h ext_bind_stdio.h ext_bind_stdio.c
+	./${EXECUTABLE} test.pot
 
 main: ${OBJECTS}
-	cc ${CFLAGS} -o main ${OBJECTS}
+	cc ${CFLAGS} -o potato ${OBJECTS}
 
 clean:
-	rm -rf ${OBJECTS} *.gz main
+	rm -rf ${OBJECTS} *.gz ${EXECUTABLE}
 
-main.o: globals.h eval.h builtins.h main.c ext_bind_stdio.c
-eval.o: data.h globals.h util.h data.h io.h eval.h eval.c
-builtins.o: builtins.h data.h globals.h util.h io.h eval.h builtins.c
-io.o: util.h data.h io.h io.c ioplus.c iobasic.c
-util.o: util.h util.c
-globals.o: globals.h globals.c
-data.o: data.h data.c
+main.o: globals.h eval.h builtins.h env.h main.c ext_bind_stdio.c
+eval.o: data.h globals.h util.h data.h io.h env.h eval.h eval.c
+io.o: util.h data.h io.h io.c
+util.o: util.h util.c data.h eval.h
+globals.o: globals.h globals.c env.h data.h builtins.h eval.h
+data.o: data.h data.c globals.h eval.h util.h
+env.o: env.h env.c util.h globals.h
+
+extensions.o: ext_bind_stdio.c ext_vector.c ${CORE}

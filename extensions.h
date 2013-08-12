@@ -4,5 +4,6 @@
 #define EXTENSIONS_H
 
 #include "ext_bind_stdio.h"
+#include "ext_vector.h"
 
 #endif
