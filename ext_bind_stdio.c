@@ -6,9 +6,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "globals.h"
 #include "eval.h"
 #include "data.h"
 #include "util.h"
+
+void ext_bind_stdio() {
+  register_primitive("c-fopen", &ext_bind_stdio_fopen);
+  register_primitive("c-fclose", &ext_bind_stdio_fclose);
+  register_primitive("c-fgetc", &ext_bind_stdio_fgetc);
+  register_primitive("c-fputc", &ext_bind_stdio_fputc);
+  register_primitive("c-getc", &ext_bind_stdio_fgetc);
+  register_primitive("c-putc", &ext_bind_stdio_fputc);
+
+  bind(global_table, "sys-stdout", make_object(EXTENSION, stdout));
+  bind(global_table, "sys-stdin", make_object(EXTENSION, stdin));
+  bind(global_table, "sys-stderr", make_object(EXTENSION, stderr));
+}
 
 struct obj* ext_bind_stdio_fopen(struct obj* operand) {
   obj_type types[] = {LITERAL, LITERAL};
@@ -30,7 +44,7 @@ struct obj* ext_bind_stdio_fclose(struct obj* operand) {
   if (!processed) {
     return operand;
   }
-  
+
   // TODO we need some kind of extension object "signing" so we don't do
   // operations on invalid file objects
 
@@ -50,7 +64,7 @@ struct obj* ext_bind_stdio_fgetc(struct obj* operand) {
   if (!processed) {
     return operand;
   }
-  
+
   FILE* fptr = processed[0]->data;
   int result = getc(fptr);
   if (ferror(fptr)) {

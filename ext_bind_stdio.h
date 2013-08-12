@@ -5,6 +5,9 @@
 #define EXT_BIND_STDIO_H
 
 #include "data.h"
+#include "eval.h"
+
+void ext_bind_stdio();
 
 /* STDLIB_FILE in this file refers to what's returned by fopen */
 
