@@ -17,7 +17,7 @@ struct obj* ext_bind_stdio_fopen(struct obj* operand) {
     return operand;
   }
   FILE* fptr = fopen(processed[0]->string, processed[1]->string);
-  
+
   if (!fptr) {
     return make_object(NIL, 0);
   }
@@ -62,7 +62,7 @@ struct obj* ext_bind_stdio_fgetc(struct obj* operand) {
 
 struct obj* ext_bind_stdio_fputc(struct obj* operand) {
   obj_type types[] = {EXTENSION, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
