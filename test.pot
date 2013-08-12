@@ -12,7 +12,7 @@
 (define demo-helper
    (func (x y)
       (if (< y 0)
-	  (print "cannot provide negative arguments")
+	  (format "cannot provide negative arguments")
 	  (if (= x y)
 	      (print (fib x))
 	      ((func ()
@@ -21,7 +21,8 @@
 
 (define demo
   (func (x)
-	(print "Inefficient fibonacci demo")
+	(format "Inefficient fibonacci demo
+")
 	(demo-helper 1 x)))
 
 (demo 8)

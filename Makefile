@@ -26,4 +26,4 @@ util.o: util.h util.c data.h eval.h
 globals.o: globals.h globals.c
 data.o: data.h data.c
 
-extensions.o: ext_bind_stdio.c
+extensions.o: ext_bind_stdio.c ext_vector.c

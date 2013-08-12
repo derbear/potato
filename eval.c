@@ -59,6 +59,9 @@ struct obj* lookup(struct table* table, char* name) {
   if (table->parent) {
     return lookup(table->parent, name);
   }
+  if (DEBUG) {
+    printf("%s", name);
+  }
   return make_error("cannot find symbol");
 }
 

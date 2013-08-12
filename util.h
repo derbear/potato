@@ -65,12 +65,14 @@ struct obj* unflatten(struct obj** array, int size);
  * Note that if is_applicative is not set but is_strict_typed is, type-checking
  * will be necessarily be done on _unevaluated_ arguments.
  *
+ * FUNCTION accepts PRIMIIVE, CELL accepts NIL, and NIL accepts any type.
+ *
  * If a check fails, operand is set to the error emitted, and NULL is returned.
  * Otherwise, the operands are flattened and evaluated if necessary.
  */
 struct obj** prologue(struct obj** operand, int is_fixed_length,
 		      int is_strict_typed, int is_applicative,
 		      int propagates_exceptions, int num_args,
-		      obj_type* arg_types);
+		      obj_type* arg_types); // TODO variable length args
 
 #endif

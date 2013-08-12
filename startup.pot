@@ -1,3 +1,5 @@
+;;; Test code
+
 (print 'program-arguments)
 (print program-arguments)
 
@@ -5,7 +7,61 @@
 (print (c-fgetc opaque-stream))
 (c-fclose opaque-stream)
 
-(define repl (func ()
+;;; Logic and comparators
+
+(define not
+  (func (pred)
+    (if pred
+	nil
+	'true)))
+
+(define and
+  (func (p1 p2)
+    (if p1
+	(if p2 p2 nil)
+	nil)))
+
+(define or
+  (func (p1 p2)
+    (if p1
+	p1
+	(if p2 p2 nil))))
+    
+(define >
+  (func (a b)
+    (< b a)))
+
+(define <=
+  (func (a b)
+    (or (< a b) (= a b))))
+
+(define >=
+  (func (a b)
+    (or (> a b) (= a b))))
+
+;;; I/O
+
+(define format
+  (func (str)
+    (define vector (vector-from-string str))
+    (define vector-len (vector-length vector))
+    (define print-char-at
+      ;; prints character at index
+      (func (vector index)
+	(c-putc sys-stdout (vector-index vector index))))
+    (define format-recur
+      (func (vector index)
+	(if (>= index vector-len)
+	    str
+	    ((func ()
+	       (print-char-at vector index)
+	       (format-recur vector (+ index 1)))))))
+    (format-recur vector 0)))
+
+;;; Main code
+
+(define repl
+  (func ()
     (print (eval (read)))
     (repl)))
   
