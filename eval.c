@@ -27,52 +27,55 @@ int list_len(struct obj* obj) { // neg return if malformed
   else return ret+1;
 }
 
-struct obj* list(struct obj* operand) { // this doubles as a shortcut for evaluating all operands
+struct obj* list(struct obj* operand, struct env* env) {
+  // this doubles as a shortcut for evaluating all operands
   if (operand->type == NIL) {
     return operand;
   } else if (operand->type != CELL) {
     return make_error("malformed arguments passed to <LIST>");
   }
-  struct obj* first = evaluate(operand->cell->first);
-  struct obj* rest = list(operand->cell->rest);
+  struct obj* first = evaluate(operand->cell->first, env);
+  struct obj* rest = list(operand->cell->rest, env);
   if (first->type == ERROR) return first;
   else if (rest->type == ERROR) return rest;
   return make_object(CELL, make_cell(first, rest));
 }
 
-struct obj* apply(struct obj* operator, struct obj* operand) {
+struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
   if (operator->type == FUNCTION) {
-    struct obj* params = operator->cell->first;
-    struct obj* procedure = operator->cell->rest;
+    struct function* func = operator->data;
+    struct obj* procedure = func->body;
+    struct obj* params = func->params;
+    struct env* parent = func->parent;
     if (list_len(params) != list_len(operand)) {
       return make_error("function called with incorrect number "
 			 "of parameters");
     }
 
-    operand = list(operand);
+    operand = list(operand, env);
     if (operand->type == ERROR) return operand;
 
-    global_env = make_env(global_env, 10); // TODO use real local frames
+    struct env* call_env;
+    call_env = make_env(parent, 10);
     while (params->type != NIL) {
       struct obj* symbol = params->cell->first;
-      bind(global_env, symbol->string, operand->cell->first);
+      bind(call_env, symbol->string, operand->cell->first);
       operand = operand->cell->rest;
       params = params->cell->rest;
     }
 
     struct obj* ret = make_object(NIL, 0);
     while (procedure->type != NIL) {
-      ret = evaluate(procedure->cell->first);
+      ret = evaluate(procedure->cell->first, call_env);
       procedure = procedure->cell->rest;
     }
-    global_env = parent(global_env);
     return ret;
   }
 
   if (operator->type == PRIMITIVE) {
     struct primitive* wrapper = operator->data;
-    struct obj* (*raw_func)(struct obj*) = wrapper->c_func;
-    return (*raw_func) (operand);
+    struct obj* (*raw_func)(struct obj*, struct env*) = wrapper->c_func;
+    return (*raw_func) (operand, env);
   }
   if (DEBUG) {
     printf("Tried to call object: ");
@@ -81,7 +84,7 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
   return make_error("cannot call object");
 }
 
-struct obj* real_evaluate(struct obj* obj) {
+struct obj* real_evaluate(struct obj* obj, struct env* env) {
   struct obj* operator;
 
   switch(obj->type) {
@@ -89,13 +92,13 @@ struct obj* real_evaluate(struct obj* obj) {
   case LITERAL:
     return obj;
   case SYMBOL:
-    return lookup(global_env, obj->string);
+    return lookup(env, obj->string);
   case CELL:
-    operator = evaluate(obj->cell->first);
+    operator = evaluate(obj->cell->first, env);
     if (operator->type == ERROR) {
       return operator;
     }
-    return apply(operator, obj->cell->rest);
+    return apply(operator, obj->cell->rest, env);
   case STREAM:
     return obj;
   case NIL:
@@ -112,7 +115,7 @@ struct obj* real_evaluate(struct obj* obj) {
 
 #define HARD_NESTING_LIMIT 1000
 
-struct obj* evaluate(struct obj* obj) {
+struct obj* evaluate(struct obj* obj, struct env* env) {
   static int nesting = 0;
   if (nesting > HARD_NESTING_LIMIT) {
     nesting = 0;
@@ -122,7 +125,7 @@ struct obj* evaluate(struct obj* obj) {
   if (DEBUG) {
     printf("Entered recursive depth: %d\n", nesting);
   }
-  obj = real_evaluate(obj);
+  obj = real_evaluate(obj, env);
   if (DEBUG) {
     printf("Exited recursive depth: %d\n", nesting);
   }

@@ -28,9 +28,9 @@ struct obj* make_out_of_bounds() {
   return make_error("vector index out of bounds");
 }
 
-struct obj* ext_vector_new(struct obj* operand) {
+struct obj* ext_vector_new(struct obj* operand, struct env* env) {
   obj_type types[] = {NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
 
   int size;
   if (!processed) {
@@ -50,9 +50,9 @@ struct obj* ext_vector_new(struct obj* operand) {
   return make_object(EXTENSION, v);
 }
 
-struct obj* ext_vector_from_string(struct obj* operand) {
+struct obj* ext_vector_from_string(struct obj* operand, struct env* env) {
   obj_type types[] = {LITERAL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
   }
@@ -70,9 +70,9 @@ struct obj* ext_vector_from_string(struct obj* operand) {
   return make_object(EXTENSION, v);
 }
 
-struct obj* ext_vector_length(struct obj* operand) {
+struct obj* ext_vector_length(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
   }
@@ -81,9 +81,9 @@ struct obj* ext_vector_length(struct obj* operand) {
   return make_small_object(NUMBER, v->size);
 }
 
-struct obj* ext_vector_index(struct obj* operand) {
+struct obj* ext_vector_index(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -96,9 +96,9 @@ struct obj* ext_vector_index(struct obj* operand) {
   return v->data[index];
 }
 
-struct obj* ext_vector_set(struct obj* operand) {
+struct obj* ext_vector_set(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION, NUMBER, NIL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 3, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 3, types);
   if (!processed) {
     return operand;
   }
@@ -118,9 +118,9 @@ void expand(vector* v) {
   v->data = realloc(v->data, v->capacity);
 }
 
-struct obj* ext_vector_insert(struct obj* operand) {
+struct obj* ext_vector_insert(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION, NUMBER, NIL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 3, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 3, types);
   if (!processed) {
     return operand;
   }
@@ -142,9 +142,9 @@ struct obj* ext_vector_insert(struct obj* operand) {
   return processed[2];
 }
 
-struct obj* ext_vector_remove(struct obj* operand) {
+struct obj* ext_vector_remove(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }

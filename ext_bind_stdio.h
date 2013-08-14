@@ -15,24 +15,24 @@ void ext_bind_stdio();
  * Arguments: STRING filename, STRING mode
  * Return: STDLIB_FILE file stream | NIL (failure)
  */
-struct obj* ext_bind_stdio_fopen(struct obj* operand);
+struct obj* ext_bind_stdio_fopen(struct obj* operand, struct env* env);
 
 /**
  * Arguments: STDLIB_FILE file stream
  * Return: SYMBOL (success) | NIL (failure)
  */
-struct obj* ext_bind_stdio_fclose(struct obj* operand);
+struct obj* ext_bind_stdio_fclose(struct obj* operand, struct env* env);
 
 /**
  * Arguments: STDLIB_FILE file stream
  * Return: NUMBER char (success) | NIL (failure)
  */
-struct obj* ext_bind_stdio_fgetc(struct obj* operand);
+struct obj* ext_bind_stdio_fgetc(struct obj* operand, struct env* env);
 
 /**
  * Arguments: STDLIB_FILE file stream, NUMBER char
  * Return: NUMBER char (success) | NIL (failure)
  */
-struct obj* ext_bind_stdio_fputc(struct obj* operand);
+struct obj* ext_bind_stdio_fputc(struct obj* operand, struct env* env);
 
 #endif

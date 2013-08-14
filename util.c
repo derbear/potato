@@ -77,6 +77,7 @@ struct obj* unflatten(struct obj** array, int size) {
 }
 
 struct obj** prologue(struct obj** operand,
+		      struct env* env,
 		      int is_fixed_length,
 		      int is_strict_typed,
 		      int is_applicative,
@@ -98,7 +99,7 @@ struct obj** prologue(struct obj** operand,
 
   if (is_applicative) {
     for (int i = 0; i < size; i++) {
-      flattened[i] = evaluate(flattened[i]);
+      flattened[i] = evaluate(flattened[i], env);
       if (propagates_exceptions && flattened[i]->type == ERROR) {
 	*operand = flattened[i];
 	return 0;

@@ -10,21 +10,22 @@
 #define BUILTINS_H_INCLUDED
 
 #include "data.h"
+#include "env.h"
 
 /**
  * Adds each operand to 0.
  */
-struct obj* add(struct obj* operand);
+struct obj* add(struct obj* operand, struct env* environment);
 
 /**
  * With one argument, inverts it; with more, subtracts the rest from the first.
  */
-struct obj* sub(struct obj* operand);
+struct obj* sub(struct obj* operand, struct env* environment);
 
 /**
  * Multiplies each operand with 1.
  */
-struct obj* mul(struct obj* operand);
+struct obj* mul(struct obj* operand, struct env* environment);
 
 /**
  * Floor division.
@@ -35,42 +36,42 @@ struct obj* mul(struct obj* operand);
  * Since floating-point operators are not yet supported, if there is one
  * argument this will return 0 (unless that argument is 0 or 1).
  */
-struct obj* floor_div(struct obj* operand);
+struct obj* floor_div(struct obj* operand, struct env* environment);
 
 /**
  * Returns the first number if it is equal to the rest; otherwise returns NIL.
  */
-struct obj* equals(struct obj* operand);
+struct obj* equals(struct obj* operand, struct env* environment);
 
 /**
  * Returns the first number if it is equal to the second; otherwise NIL.
  */
-struct obj* lessthan(struct obj* operand);
+struct obj* lessthan(struct obj* operand, struct env* environment);
 
 /**
  * Returns the first object in a cell.
  */
-struct obj* first(struct obj* operand);
+struct obj* first(struct obj* operand, struct env* environment);
 
 /**
  * Returns the second object in a cell.
  */
-struct obj* rest(struct obj* operand);
+struct obj* rest(struct obj* operand, struct env* environment);
 
 /**
  * Returns its first argument, unevaluated.
  */
-struct obj* quote(struct obj* operand);
+struct obj* quote(struct obj* operand, struct env* environment);
 
 /**
  * Constructs a cell with its first and second arguments.
  */
-struct obj* construct(struct obj* operand);
+struct obj* construct(struct obj* operand, struct env* environment);
 
 /**
  * Binds its first argument, a symbol, to the value of its second argument.
  */
-struct obj* define(struct obj* operand);
+struct obj* define(struct obj* operand, struct env* environment);
 
 /**
  * Defines an anonymous function.
@@ -85,40 +86,40 @@ struct obj* define(struct obj* operand);
  *
  * Variable-length arguments are not yet supported.
  */
-struct obj* function(struct obj* operand);
+struct obj* function(struct obj* operand, struct env* environment);
 
 /**
  * Evaluates the first argument. If it is NIL, returns the value of the third
  * argument; otherwise, the second.
  */
-struct obj* ifelse(struct obj* operand);
+struct obj* ifelse(struct obj* operand, struct env* environment);
 
 /**
  * Evaluates the first argument.
  */
-struct obj* builtin_eval(struct obj* operand);
+struct obj* builtin_eval(struct obj* operand, struct env* environment);
 
 /**
  * Evaluates the first argument, which should be a operator, and applies the
  * second argument as a list of operands.
  */
-struct obj* builtin_apply(struct obj* operand);
+struct obj* builtin_apply(struct obj* operand, struct env* environment);
 
 /**
  * Reads an expression from the first operand, a stream.
  *
  * With no arguments, reads from standard input.
  */
-struct obj* builtin_read(struct obj* operand);
+struct obj* builtin_read(struct obj* operand, struct env* environment);
 
 /**
  * Prints the first operand to standard output.
  */
-struct obj* builtin_print(struct obj* operand);
+struct obj* builtin_print(struct obj* operand, struct env* environment);
 
 /**
  * Opens and executes the contents of a file.
  */
-struct obj* load(struct obj* operand);
+struct obj* load(struct obj* operand, struct env* environment);
 
 #endif

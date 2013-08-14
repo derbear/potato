@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "io.h"
+#include "data.h"
 #include "builtins.h"
 #include "eval.h"
 #include "env.h"
@@ -13,7 +14,8 @@
 struct reader* stdin_reader;
 struct env* global_env;
 
-void register_primitive(char* name, struct obj* (*func)(struct obj*)) {
+void register_primitive(char* name, struct obj* (*func)(struct obj*,
+							struct env*)) {
   struct primitive* wrapped = malloc(sizeof(struct primitive));
   wrapped->c_func = func;
   wrapped->name = name;

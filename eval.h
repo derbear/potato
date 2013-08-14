@@ -16,18 +16,18 @@
  *
  * This function can be called directly as a primitive operator.
  */
-struct obj* list(struct obj* operand);
+struct obj* list(struct obj* operand, struct env*);
 
 /**
  * Applies _operator_ to _operand_, where _operator_ is either a builtin
  * operator or a user-defined function.
  */
-struct obj* apply(struct obj* operator, struct obj* operand);
+struct obj* apply(struct obj* operator, struct obj* operand, struct env*);
 
 /**
  * Evaluates the given object (following normal LISP rules of evaluation).
  */
-struct obj* evaluate(struct obj* obj);
+struct obj* evaluate(struct obj* obj, struct env*);
 
 /**
  * Returns the length of its given argument.

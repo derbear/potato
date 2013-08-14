@@ -12,9 +12,9 @@
 #include "util.h"
 #include "io.h"
 
-struct obj* add(struct obj* operand) {
+struct obj* add(struct obj* operand, struct env* env) {
   obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -22,9 +22,9 @@ struct obj* add(struct obj* operand) {
   return make_small_object(NUMBER, result);
 }
 
-struct obj* sub(struct obj* operand) {
+struct obj* sub(struct obj* operand, struct env* env) {
   obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -32,9 +32,9 @@ struct obj* sub(struct obj* operand) {
   return make_small_object(NUMBER, result);
 }
 
-struct obj* mul(struct obj* operand) {
+struct obj* mul(struct obj* operand, struct env* env) {
   obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -42,9 +42,9 @@ struct obj* mul(struct obj* operand) {
   return make_small_object(NUMBER, result);
 }
 
-struct obj* floor_div(struct obj* operand) {
+struct obj* floor_div(struct obj* operand, struct env* env) {
   obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -55,9 +55,9 @@ struct obj* floor_div(struct obj* operand) {
   return make_small_object(NUMBER, result);
 }
 
-struct obj* equals(struct obj* operand) {
+struct obj* equals(struct obj* operand, struct env* env) {
   obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -68,9 +68,9 @@ struct obj* equals(struct obj* operand) {
   }
 }
 
-struct obj* lessthan(struct obj* operand) {
+struct obj* lessthan(struct obj* operand, struct env* env) {
   obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -81,9 +81,9 @@ struct obj* lessthan(struct obj* operand) {
   }
 }
 
-struct obj* first(struct obj* operand) {
+struct obj* first(struct obj* operand, struct env* env) {
   obj_type types[] = {CELL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
   }
@@ -93,9 +93,9 @@ struct obj* first(struct obj* operand) {
   return processed[0]->cell->first;
 }
 
-struct obj* rest(struct obj* operand) {
+struct obj* rest(struct obj* operand, struct env* env) {
   obj_type types[] = {CELL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
   }
@@ -105,40 +105,40 @@ struct obj* rest(struct obj* operand) {
   return processed[0]->cell->rest;
 }
 
-struct obj* quote(struct obj* operand) {
-  struct obj** processed = prologue(&operand, 1, 0, 0, 1, 1, 0);
+struct obj* quote(struct obj* operand, struct env* env) {
+  struct obj** processed = prologue(&operand, env, 1, 0, 0, 1, 1, 0);
   if (!processed) {
     return operand;
   }
   return processed[0];
 }
 
-struct obj* construct(struct obj* operand) {
-  struct obj** processed = prologue(&operand, 1, 0, 1, 1, 2, 0);
+struct obj* construct(struct obj* operand, struct env* env) {
+  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 2, 0);
   if (!processed) {
     return operand;
   }
   return make_object(CELL, make_cell(processed[0], processed[1]));
 }
 
-struct obj* define(struct obj* operand) {
-  struct obj** processed = prologue(&operand, 1, 0, 0, 1, 2, 0);
+struct obj* define(struct obj* operand, struct env* env) {
+  struct obj** processed = prologue(&operand, env, 1, 0, 0, 1, 2, 0);
   if (!processed) {
     return operand;
   }
   if (processed[0]->type != SYMBOL) {
     return make_error("the first argument passed to "
-		       "<DEFINE> must be a symbol");
+		      "<DEFINE> must be a symbol");
   }
-  struct obj* value = evaluate(processed[1]);
+  struct obj* value = evaluate(processed[1], env);
   bind(global_env, processed[0]->string, value);
   return processed[0];
 }
 
-struct obj* function(struct obj* operand) {
+struct obj* function(struct obj* operand, struct env* env) {
   if (list_len(operand) <= 0) {
     return make_error("<FUNCTION> requires at least one "
-		       "valid argument");
+		      "valid argument");
   }
   struct obj* params = operand->cell->first;
   while (params->type != NIL) {
@@ -148,47 +148,52 @@ struct obj* function(struct obj* operand) {
     }
     params = curr->rest;
   }
-  return make_object(FUNCTION, operand->data);
+
+  struct function* f = malloc(sizeof(struct function));
+  f->body = operand->cell->rest;
+  f->params = operand->cell->first;
+  f->parent = env;
+  return make_object(FUNCTION, f);
 }
 
-struct obj* ifelse(struct obj* operand) {
-  struct obj** processed = prologue(&operand, 1, 0, 0, 1, 3, 0);
+struct obj* ifelse(struct obj* operand, struct env* env) {
+  struct obj** processed = prologue(&operand, env, 1, 0, 0, 1, 3, 0);
   if (!processed) {
     return operand;
   }
 
-  struct obj* ret = evaluate(processed[0]);
+  struct obj* ret = evaluate(processed[0], env);
   if (ret->type == NIL) {
-    return evaluate(processed[2]);
+    return evaluate(processed[2], env);
   } else {
-    return evaluate(processed[1]);
+    return evaluate(processed[1], env);
   }
 }
 
-struct obj* builtin_eval(struct obj* operand) {
-  struct obj** processed = prologue(&operand, 1, 0, 1, 1, 1, 0);
+struct obj* builtin_eval(struct obj* operand, struct env* env) {
+  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
   if (!processed)  {
     return operand;
   }
-  return evaluate(processed[0]);
+  return evaluate(processed[0], env);
 }
 
-struct obj* builtin_apply(struct obj* operand) {
+struct obj* builtin_apply(struct obj* operand, struct env* env) {
   obj_type types0[] = {FUNCTION, CELL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types0);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types0);
   if (!processed) {
     return operand;
   }
-  return apply(processed[0], processed[1]);
+  return apply(processed[0], processed[1], env);
 }
 
-struct obj* builtin_read(struct obj* operand) {
+struct obj* builtin_read(struct obj* operand, struct env* env) {
   if (list_len(operand) != 0 &&
       list_len(operand) != 1) {
     return make_error("<READ> takes either zero or one args");
   }
 
-  operand = list(operand);
+  operand = list(operand, env);
   if (list_len(operand) == 0) {
     return next_object(stdin_reader);
   } else {
@@ -197,8 +202,8 @@ struct obj* builtin_read(struct obj* operand) {
   }
 }
 
-struct obj* builtin_print(struct obj* operand) {
-  struct obj** processed = prologue(&operand, 1, 0, 1, 1, 1, 0);
+struct obj* builtin_print(struct obj* operand, struct env* env) {
+  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
   if (!processed) {
     // TODO have something else catch exceptions
     print_obj(operand);
@@ -210,9 +215,9 @@ struct obj* builtin_print(struct obj* operand) {
   return processed[0];
 }
 
-struct obj* load(struct obj* operand) {
+struct obj* load(struct obj* operand, struct env* env) {
   obj_type types[] = {LITERAL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
   }
@@ -229,7 +234,7 @@ struct obj* load(struct obj* operand) {
       fclose(f); // TODO implement reader destroy
       return make_object(NIL, 0);
     }
-    next = evaluate(next);
+    next = evaluate(next, env);
     if (next->type == ERROR) {
       return next;
     }

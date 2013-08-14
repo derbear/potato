@@ -70,9 +70,9 @@ struct obj* unflatten(struct obj** array, int size);
  * If a check fails, operand is set to the error emitted, and NULL is returned.
  * Otherwise, the operands are flattened and evaluated if necessary.
  */
-struct obj** prologue(struct obj** operand, int is_fixed_length,
-		      int is_strict_typed, int is_applicative,
-		      int propagates_exceptions, int num_args,
-		      obj_type* arg_types); // TODO variable length args
+struct obj** prologue(struct obj** operand, struct env* env,
+		      int is_fixed_length, int is_strict_typed,
+		      int is_applicative, int propagates_exceptions,
+		      int num_args, obj_type* arg_types); // TODO variable length args
 
 #endif

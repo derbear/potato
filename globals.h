@@ -29,6 +29,7 @@ void initialize(void);
 /**
  * Register a primitive function to the global namespace.
  */
-void register_primitive(char* name, struct obj* (*func)(struct obj*));
+void register_primitive(char* name, struct obj* (*func)(struct obj*,
+							struct env*));
 
 #endif

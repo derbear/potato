@@ -4,6 +4,8 @@
 #ifndef DATA_H_INCLUDED
 #define DATA_H_INCLUDED
 
+struct env; // forward declaration
+
 typedef enum {
   DONE = -1,
   ERROR = 0,
@@ -28,14 +30,15 @@ struct cell {
 }; // @heap
 
 struct primitive {
-  struct obj* (*c_func)(struct obj*);
+  struct obj* (*c_func)(struct obj*, struct env*);
   char* name;
 }; // @heap
 
 struct function {
   struct obj* body;
-  struct table* parent;
-};
+  struct obj* params;
+  struct env* parent;
+}; // @heap
 
 /**
  * Create on the heap a cell with a first and second argument.

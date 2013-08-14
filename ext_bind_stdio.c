@@ -25,9 +25,9 @@ void ext_bind_stdio() {
   bind(global_env, "sys-stderr", make_object(EXTENSION, stderr));
 }
 
-struct obj* ext_bind_stdio_fopen(struct obj* operand) {
+struct obj* ext_bind_stdio_fopen(struct obj* operand, struct env* env) {
   obj_type types[] = {LITERAL, LITERAL};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
@@ -39,9 +39,9 @@ struct obj* ext_bind_stdio_fopen(struct obj* operand) {
   return make_object(EXTENSION, fptr);
 }
 
-struct obj* ext_bind_stdio_fclose(struct obj* operand) {
+struct obj* ext_bind_stdio_fclose(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
   }
@@ -59,9 +59,9 @@ struct obj* ext_bind_stdio_fclose(struct obj* operand) {
   }
 }
 
-struct obj* ext_bind_stdio_fgetc(struct obj* operand) {
+struct obj* ext_bind_stdio_fgetc(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 1, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
   }
@@ -75,9 +75,9 @@ struct obj* ext_bind_stdio_fgetc(struct obj* operand) {
   }
 }
 
-struct obj* ext_bind_stdio_fputc(struct obj* operand) {
+struct obj* ext_bind_stdio_fputc(struct obj* operand, struct env* env) {
   obj_type types[] = {EXTENSION, NUMBER};
-  struct obj** processed = prologue(&operand, 1, 1, 1, 1, 2, types);
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }

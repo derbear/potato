@@ -14,7 +14,6 @@ Near-future
  * better error handling
  * better error abstractions (error type, stack-unwind)
  * better layout of code
- * lexical scoping
  * documentation
  * tests
 
