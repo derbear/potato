@@ -47,7 +47,10 @@ void bind(struct table* table, char* name, struct obj* obj) {
   table->list[(table->next_free)++] = make_entry(name, obj);
 }
 
-struct obj* lookup(struct table* table, char* name) {
+#define lookup(x,y) lookup_helper((x),(y),1)
+#define lookup_local(x,y) lookup_helper((x),(y),0)
+
+struct obj* lookup_helper(struct table* table, char* name, int recursive) {
   int i = 0;
   while (i < table->next_free) {
     s_entry entry = table->list[i];
@@ -56,11 +59,11 @@ struct obj* lookup(struct table* table, char* name) {
     }
     i++;
   }
-  if (table->parent) {
+  if (recursive && table->parent) {
     return lookup(table->parent, name);
   }
   if (DEBUG) {
-    printf("%s", name);
+    printf("Looked up: %s", name);
   }
   return make_error("cannot find symbol");
 }
@@ -126,6 +129,10 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
     struct obj* (*raw_func)(struct obj*) = wrapper->c_func;
     return (*raw_func) (operand);
   }
+  if (debug) {
+    printf("Tried to call object: ");
+    print_obj(operator);
+  }
   return make_error("cannot call object");
 }
 
@@ -166,9 +173,14 @@ struct obj* evaluate(struct obj* obj) {
     nesting = 0;
     return make_error("exceeded call stack limit");
   }
-
   nesting++;
+  if (DEBUG) {
+    printf("Entered recursive depth: %d\n", nesting);
+  }
   obj = real_evaluate(obj);
+  if (DEBUG) {
+    printf("Exited recursive depth: %d\n", nesting);
+  }
   nesting--;
   return obj;
 }

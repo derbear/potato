@@ -32,6 +32,11 @@ struct primitive {
   char* name;
 }; // @heap
 
+struct function {
+  struct obj* body;
+  struct table* parent;
+};
+
 /**
  * Create on the heap a cell with a first and second argument.
  */

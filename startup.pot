@@ -1,11 +1,11 @@
 ;;; Test code
 
-(print 'program-arguments)
-(print program-arguments)
+;(print 'program-arguments)
+;(print program-arguments)
 
-(define opaque-stream (c-fopen "test.pot" "r"))
-(print (c-fgetc opaque-stream))
-(c-fclose opaque-stream)
+;(define opaque-stream (c-fopen "test.pot" "r"))
+;(print (c-fgetc opaque-stream))
+;(c-fclose opaque-stream)
 
 ;;; Logic and comparators
 
@@ -15,13 +15,13 @@
 	nil
 	'true)))
 
-(define and
+(define and ; TODO short-circuit
   (func (p1 p2)
     (if p1
 	(if p2 p2 nil)
 	nil)))
 
-(define or
+(define or ; TODO short-circuit
   (func (p1 p2)
     (if p1
 	p1
@@ -42,13 +42,13 @@
 ;;; I/O
 
 (define format
-  (func (str)
+  (func (str dest)
     (define vector (vector-from-string str))
     (define vector-len (vector-length vector))
     (define print-char-at
       ;; prints character at index
       (func (vector index)
-	(c-putc sys-stdout (vector-index vector index))))
+	(c-putc dest (vector-index vector index))))
     (define format-recur
       (func (vector index)
 	(if (>= index vector-len)
@@ -62,6 +62,7 @@
 
 (define repl
   (func ()
+    ;(format "> " sys-stdout)
     (print (eval (read)))
     (repl)))
   
