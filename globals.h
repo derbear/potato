@@ -17,9 +17,9 @@
 extern struct reader* stdin_reader;
 
 /**
- * The global lookup table for the global namespace.
+ * The global lookup env for the global namespace.
  */
-extern struct table* global_table;
+extern struct env* global_env;
 
 /**
  * Initializes the global namespace and other global objects.

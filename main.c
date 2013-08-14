@@ -10,6 +10,7 @@
 #include <stdio.h>
 
 #include "globals.h"
+#include "env.h"
 #include "builtins.h"
 #include "eval.h"
 #include "io.h"
@@ -32,7 +33,7 @@ int bootstrap(int argc, char* argv[]) {
     translated[i] = make_object(LITERAL, argv[i]); // TODO is this safe?
   }
   struct obj* arg_values = unflatten(translated, argc);
-  bind(global_table, "program-arguments", arg_values);
+  bind(global_env, "program-arguments", arg_values);
   struct obj* str = make_object(LITERAL, STARTUP_FILE);
   struct obj* arg = make_object(CELL, make_cell(str, make_object(NIL, 0)));
   struct obj* result = load(arg);

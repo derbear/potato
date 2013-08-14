@@ -7,17 +7,6 @@
 #include "data.h"
 
 /**
- * Lookup tables which map strings to objects and have a pointer to parent
- * lookup tables (which is NULL if it doesn't have one).
- */
-struct table;
-
-/**
- * Create a lookup table with a given parent and a given initial size.
- */
-struct table* make_table(struct table* parent, int size);
-
-/**
  * Creates a list from the rest of its arguments or returns NIL if no arguments
  * were provided.
  *
@@ -46,11 +35,6 @@ struct obj* evaluate(struct obj* obj);
  * If its given argument is not a well-formed list, then this returns -1.
  */
 int list_len(struct obj* obj);
-
-/**
- * Binds the given name to an object in the given lookup table.
- */
-void bind(struct table*, char* name, struct obj* obj);
 
 /**
  * Prints an object to standard output.

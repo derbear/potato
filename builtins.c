@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 
+#include "env.h"
 #include "eval.h"
 #include "data.h"
 #include "globals.h"
@@ -130,7 +131,7 @@ struct obj* define(struct obj* operand) {
 		       "<DEFINE> must be a symbol");
   }
   struct obj* value = evaluate(processed[1]);
-  bind(global_table, processed[0]->string, value);
+  bind(global_env, processed[0]->string, value);
   return processed[0];
 }
 

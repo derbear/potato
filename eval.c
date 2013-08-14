@@ -6,67 +6,12 @@
 
 #include "eval.h"
 
+#include "env.h"
 #include "globals.h"
 #include "util.h"
 #include "data.h"
 #include "io.h"
 
-typedef struct {
-  char* name; // @heap
-  struct obj* object;
-} s_entry;
-
-struct table {
-  struct table* parent;
-  s_entry* list; // @heap
-  int next_free;
-  int size;
-}; // @heap
-
-s_entry make_entry(char* name, struct obj* object) {
-  s_entry entry;
-  entry.name = name;
-  entry.object = object;
-  return entry;
-}
-
-struct table* make_table(struct table* parent, int size) {
-  struct table* table = malloc(sizeof(struct table));
-  table->parent = parent;
-  table->list = malloc(sizeof(s_entry) * size);
-  table->next_free = 0;
-  table->size = size;
-  return table;
-}
-
-void bind(struct table* table, char* name, struct obj* obj) {
-  if (table->next_free == table->size) {
-    printf("ERROR: TABLE FULL\n");
-    exit(1);
-  }
-  table->list[(table->next_free)++] = make_entry(name, obj);
-}
-
-#define lookup(x,y) lookup_helper((x),(y),1)
-#define lookup_local(x,y) lookup_helper((x),(y),0)
-
-struct obj* lookup_helper(struct table* table, char* name, int recursive) {
-  int i = 0;
-  while (i < table->next_free) {
-    s_entry entry = table->list[i];
-    if (str_eq(name, entry.name)) {
-      return entry.object;
-    }
-    i++;
-  }
-  if (recursive && table->parent) {
-    return lookup(table->parent, name);
-  }
-  if (DEBUG) {
-    printf("Looked up: %s", name);
-  }
-  return make_error("cannot find symbol");
-}
 
 //////////
 
@@ -107,10 +52,10 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
     operand = list(operand);
     if (operand->type == ERROR) return operand;
 
-    global_table = make_table(global_table, 10); // TODO use real local frames
+    global_env = make_env(global_env, 10); // TODO use real local frames
     while (params->type != NIL) {
       struct obj* symbol = params->cell->first;
-      bind(global_table, symbol->string, operand->cell->first);
+      bind(global_env, symbol->string, operand->cell->first);
       operand = operand->cell->rest;
       params = params->cell->rest;
     }
@@ -120,7 +65,7 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
       ret = evaluate(procedure->cell->first);
       procedure = procedure->cell->rest;
     }
-    global_table = global_table->parent;
+    global_env = parent(global_env);
     return ret;
   }
 
@@ -129,7 +74,7 @@ struct obj* apply(struct obj* operator, struct obj* operand) {
     struct obj* (*raw_func)(struct obj*) = wrapper->c_func;
     return (*raw_func) (operand);
   }
-  if (debug) {
+  if (DEBUG) {
     printf("Tried to call object: ");
     print_obj(operator);
   }
@@ -144,7 +89,7 @@ struct obj* real_evaluate(struct obj* obj) {
   case LITERAL:
     return obj;
   case SYMBOL:
-    return lookup(global_table, obj->string);
+    return lookup(global_env, obj->string);
   case CELL:
     operator = evaluate(obj->cell->first);
     if (operator->type == ERROR) {

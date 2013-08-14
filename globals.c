@@ -8,19 +8,20 @@
 #include "io.h"
 #include "builtins.h"
 #include "eval.h"
+#include "env.h"
 
 struct reader* stdin_reader;
-struct table* global_table;
+struct env* global_env;
 
 void register_primitive(char* name, struct obj* (*func)(struct obj*)) {
   struct primitive* wrapped = malloc(sizeof(struct primitive));
   wrapped->c_func = func;
   wrapped->name = name;
-  bind(global_table, name, make_object(PRIMITIVE, wrapped));
+  bind(global_env, name, make_object(PRIMITIVE, wrapped));
 }
 
 void initialize() {
-  global_table = make_table(0, 50);
+  global_env = make_env(0, 50);
   stdin_reader = make_reader(stdin);
 
   register_primitive("list", &list);

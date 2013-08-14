@@ -8,6 +8,7 @@
 
 #include "globals.h"
 #include "eval.h"
+#include "env.h"
 #include "data.h"
 #include "util.h"
 
@@ -19,9 +20,9 @@ void ext_bind_stdio() {
   register_primitive("c-getc", &ext_bind_stdio_fgetc);
   register_primitive("c-putc", &ext_bind_stdio_fputc);
 
-  bind(global_table, "sys-stdout", make_object(EXTENSION, stdout));
-  bind(global_table, "sys-stdin", make_object(EXTENSION, stdin));
-  bind(global_table, "sys-stderr", make_object(EXTENSION, stderr));
+  bind(global_env, "sys-stdout", make_object(EXTENSION, stdout));
+  bind(global_env, "sys-stdin", make_object(EXTENSION, stdin));
+  bind(global_env, "sys-stderr", make_object(EXTENSION, stderr));
 }
 
 struct obj* ext_bind_stdio_fopen(struct obj* operand) {
