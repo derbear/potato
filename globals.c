@@ -23,7 +23,7 @@ void register_primitive(char* name, struct obj* (*func)(struct obj*,
 }
 
 void initialize() {
-  global_env = make_env(0, 50);
+  global_env = make_env(0, 100);
   stdin_reader = make_reader(stdin);
 
   register_primitive("list", &list);

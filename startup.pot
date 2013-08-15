@@ -39,6 +39,14 @@
   (func (a b)
     (or (> a b) (= a b))))
 
+;;; List utils
+
+(define length
+  (func (list)
+    (if list
+	(+ 1 (length (rest list)))
+	0)))
+
 ;;; I/O
 
 (define format
@@ -65,5 +73,7 @@
     ;(format "> " sys-stdout)
     (print (eval (read)))
     (repl)))
-  
-(repl) ; start main loop
+
+(if (= 1 (length program-arguments))
+    (repl)
+    (load (first (rest program-arguments))))

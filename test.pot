@@ -21,8 +21,8 @@
 
 (define demo
   (func (x)
-	(format "Inefficient fibonacci demo sys-stdout
-")
+	(format "Inefficient fibonacci demo
+" sys-stdout)
 	(demo-helper 1 x)))
 
 (demo 8)
