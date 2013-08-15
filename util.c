@@ -113,8 +113,8 @@ struct obj** prologue(struct obj** operand,
 	// nil is accepted whenever cells are accepted, and
 	// primitives are accepted whenever functions are.
 	// declaring a requirement to have type nil indicates any type
-	if ((flattened[i]->type != NIL && arg_types[i] != CELL) &&
-	    (flattened[i]->type != PRIMITIVE && arg_types[i] != FUNCTION) &&
+	if (!(flattened[i]->type == NIL && arg_types[i] == CELL) &&
+	    !(flattened[i]->type == PRIMITIVE && arg_types[i] == FUNCTION) &&
 	    arg_types[i] != NIL) {
 	  errorstrptr = "incorrect argument type(s)";
 	  *operand = make_object(ERROR, errorstrptr);
