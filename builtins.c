@@ -131,7 +131,7 @@ struct obj* define(struct obj* operand, struct env* env) {
 		      "<DEFINE> must be a symbol");
   }
   struct obj* value = evaluate(processed[1], env);
-  bind(global_env, processed[0]->string, value);
+  bind(env, processed[0]->string, value);
   return processed[0];
 }
 
