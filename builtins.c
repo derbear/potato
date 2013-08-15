@@ -163,11 +163,14 @@ struct obj* ifelse(struct obj* operand, struct env* env) {
   }
 
   struct obj* ret = evaluate(processed[0], env);
+  struct thunk* deferred = malloc(sizeof(struct thunk));
+  deferred->env = env;
   if (ret->type == NIL) {
-    return evaluate(processed[2], env);
+    deferred->obj = processed[2];
   } else {
-    return evaluate(processed[1], env);
+    deferred->obj = processed[1];
   }
+  return make_object(THUNK, deferred);
 }
 
 struct obj* builtin_eval(struct obj* operand, struct env* env) {
