@@ -66,7 +66,10 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
       return procedure;
     }
     while (procedure->cell->rest->type != NIL) {
-      evaluate(procedure->cell->first, call_env);
+      struct obj* ret = evaluate(procedure->cell->first, call_env);
+      if (ret->type == ERROR) {
+	return ret;
+      }
       procedure = procedure->cell->rest;
     }
     struct thunk* deferred = malloc(sizeof(struct thunk));

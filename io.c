@@ -281,7 +281,7 @@ struct obj* next_list(struct reader* r) {
       rest = next_object(r);
       n = token_pop(r);
       if (n.type != CPAR) {
-	return make_error("cell dot (.) construction needs to have a"
+	return make_error("cell dot (.) construction needs to have a "
 			   "closing parenthesis '('");
       }
       return make_object(CELL, make_cell(first, rest));

@@ -211,7 +211,7 @@ struct obj* builtin_print(struct obj* operand, struct env* env) {
     // TODO have something else catch exceptions
     print_obj(operand);
     printf("\n");
-    return operand;
+    return make_object(NIL, 0);
   }
   print_obj(processed[0]);
   printf("\n");
