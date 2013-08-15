@@ -13,8 +13,6 @@
 #include "io.h"
 
 
-//////////
-
 int list_len(struct obj* obj) { // neg return if malformed
   if (obj->type == NIL) {
     return 0;
@@ -64,12 +62,17 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
       params = params->cell->rest;
     }
 
-    struct obj* ret = make_object(NIL, 0);
-    while (procedure->type != NIL) {
-      ret = evaluate(procedure->cell->first, call_env);
+    if (procedure->type == NIL) {
+      return procedure;
+    }
+    while (procedure->cell->rest->type != NIL) {
+      evaluate(procedure->cell->first, call_env);
       procedure = procedure->cell->rest;
     }
-    return ret;
+    struct thunk* deferred = malloc(sizeof(struct thunk));
+    deferred->env = call_env;
+    deferred->obj = procedure->cell->first;
+    return make_object(THUNK, deferred);
   }
 
   if (operator->type == PRIMITIVE) {
@@ -86,30 +89,41 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
 
 struct obj* real_evaluate(struct obj* obj, struct env* env) {
   struct obj* operator;
+  struct obj* applied;
 
-  switch(obj->type) {
-  case NUMBER:
-  case LITERAL:
-    return obj;
-  case SYMBOL:
-    return lookup(env, obj->string);
-  case CELL:
-    operator = evaluate(obj->cell->first, env);
-    if (operator->type == ERROR) {
-      return operator;
+  while (1) {
+    switch(obj->type) {
+    case NUMBER:
+    case LITERAL:
+      return obj;
+    case SYMBOL:
+      return lookup(env, obj->string);
+    case CELL:
+      operator = evaluate(obj->cell->first, env);
+      if (operator->type == ERROR) {
+	return operator;
+      }
+      applied = apply(operator, obj->cell->rest, env);
+    
+      if (applied->type == THUNK) {
+	obj = ((struct thunk*) (applied->data))->obj;
+	env = ((struct thunk*) (applied->data))->env;
+	continue;
+      } else {
+	return applied;
+      }
+    case STREAM:
+      return obj;
+    case NIL:
+      return obj;
+    case ERROR:
+      return obj;
+    case DONE:
+      return obj;
+    default:
+      printf("ERROR: BAD OBJECT (EVAL)\n");
+      return make_error(0);
     }
-    return apply(operator, obj->cell->rest, env);
-  case STREAM:
-    return obj;
-  case NIL:
-    return obj;
-  case ERROR:
-    return obj;
-  case DONE:
-    return obj;
-  default:
-    printf("ERROR: BAD OBJECT (EVAL)\n");
-    return make_error(0);
   }
 }
 

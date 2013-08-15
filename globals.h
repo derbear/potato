@@ -9,7 +9,7 @@
 /**
  * Set this to a non-zero value to print more information.
  */
-#define DEBUG 0
+#define DEBUG 1
 
 /**
  * The global stream reader for standard input.

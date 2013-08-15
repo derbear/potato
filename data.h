@@ -11,6 +11,7 @@ typedef enum {
   ERROR = 0,
   SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION,
   LITERAL, STREAM,
+  THUNK, // used to implement tail recursion
   EXTENSION, // for extensions
 } obj_type;
 
@@ -32,6 +33,11 @@ struct cell {
 struct primitive {
   struct obj* (*c_func)(struct obj*, struct env*);
   char* name;
+}; // @heap
+
+struct thunk {
+  struct env* env;
+  struct obj* obj;
 }; // @heap
 
 struct function {
