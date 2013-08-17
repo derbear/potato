@@ -22,6 +22,11 @@ void register_primitive(char* name, struct obj* (*func)(struct obj*,
   bind(global_env, name, make_object(PRIMITIVE, wrapped));
 }
 
+/* stopgap */
+struct obj* global(struct obj* operand, struct env* env) {
+  return define(operand, global_env);
+}
+
 void initialize() {
   global_env = make_env(0, 100);
   stdin_reader = make_reader(stdin);
@@ -46,4 +51,6 @@ void initialize() {
   register_primitive("read", &builtin_read);
   register_primitive("print", &builtin_print);
   register_primitive("load", &load);
+
+  register_primitive("global", &global);
 }
