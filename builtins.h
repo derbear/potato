@@ -94,6 +94,11 @@ struct obj* typeof(struct obj* operand, struct env* environment);
 struct obj* function(struct obj* operand, struct env* environment);
 
 /**
+ * Copy the function object but mark it as a macro.
+ */
+struct obj* mark_macro(struct obj* operand, struct env* environment);
+
+/**
  * Evaluates the first argument. If it is NIL, returns the value of the third
  * argument; otherwise, the second.
  */

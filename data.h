@@ -9,7 +9,7 @@ struct env; // forward declaration
 typedef enum {
   DONE = -1,
   ERROR = 0,
-  SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION,
+  SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION, MACRO,
   LITERAL, STREAM,
   THUNK, // used to implement tail recursion
   EXTENSION, // for extensions

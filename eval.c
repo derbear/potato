@@ -40,7 +40,7 @@ struct obj* list(struct obj* operand, struct env* env) {
 }
 
 struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
-  if (operator->type == FUNCTION) {
+  if (operator->type == FUNCTION || operator->type == MACRO) {
     struct function* func = operator->data;
     struct obj* procedure = func->body;
     struct obj* params = func->params;
@@ -50,7 +50,9 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
 			 "of parameters");
     }
 
-    operand = list(operand, env);
+    if (operator->type == FUNCTION) {
+      operand = list(operand, env);
+    }
     if (operand->type == ERROR) return operand;
 
     struct env* call_env;
@@ -72,17 +74,20 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
       }
       procedure = procedure->cell->rest;
     }
-    struct thunk* deferred = malloc(sizeof(struct thunk));
-    deferred->env = call_env;
-    deferred->obj = procedure->cell->first;
-    return make_object(THUNK, deferred);
-  }
-
-  if (operator->type == PRIMITIVE) {
+    if (operand->type == FUNCTION) { // return thunk for tail-recursion
+      struct thunk* deferred = malloc(sizeof(struct thunk));
+      deferred->env = call_env;
+      deferred->obj = procedure->cell->first;
+      return make_object(THUNK, deferred);
+    } else { // it's a macro; returned value is evaluated anyways
+      return evaluate(procedure->cell->first, call_env);
+    }
+  } else if (operator->type == PRIMITIVE) {
     struct primitive* wrapper = operator->data;
     struct obj* (*raw_func)(struct obj*, struct env*) = wrapper->c_func;
     return (*raw_func) (operand, env);
   }
+
   if (DEBUG) {
     printf("Tried to call object: ");
     print_obj(operator);
@@ -107,10 +112,13 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	return operator;
       }
       applied = apply(operator, obj->cell->rest, env);
-    
+
       if (applied->type == THUNK) {
 	obj = ((struct thunk*) (applied->data))->obj;
 	env = ((struct thunk*) (applied->data))->env;
+	continue;
+      } else if (operator->type == MACRO) {
+	obj = applied;
 	continue;
       } else {
 	return applied;
@@ -187,6 +195,9 @@ void print_obj(struct obj* obj) {
     break;
   case FUNCTION:
     printf("<USER-DEFINED-FUNCTION>");
+    break;
+  case MACRO:
+    printf("<USER-DEFINED-MACRO>");
     break;
   case STREAM:
     printf("<DATA-STREAM>");

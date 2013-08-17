@@ -140,6 +140,7 @@ struct obj* function(struct obj* operand, struct env* env) {
     return make_error("<FUNCTION> requires at least one "
 		      "valid argument");
   }
+  // TODO must typecheck this first operand
   struct obj* params = operand->cell->first;
   while (params->type != NIL) {
     struct cell* curr = params->cell;
@@ -171,11 +172,19 @@ struct obj* typeof(struct obj* operand, struct env* env) {
     TYPEOFCASE(NIL);
     TYPEOFCASE(PRIMITIVE);
     TYPEOFCASE(FUNCTION);
+    TYPEOFCASE(MACRO);
     TYPEOFCASE(STREAM);
     TYPEOFCASE(CELL);
   default:
     return make_object(SYMBOL, "NONSTANDARD");
   }
+}
+
+struct obj* mark_macro(struct obj* operand, struct env* env) {
+  obj_type types[] = {FUNCTION};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
+  struct obj* copy = make_object(MACRO, processed[0]->data);
+  return copy;
 }
 
 struct obj* ifelse(struct obj* operand, struct env* env) {
