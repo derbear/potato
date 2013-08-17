@@ -4,26 +4,27 @@ POTATO is (almost) a Scheme interpreter written in C for fun and learning in my 
 `make clean' to cleanup
 `make dist-source' to bundle all sources for distribution
 
-`./main' to run
-`./main [filename]' to execute a file
+`./potato' to run
+`./potato [filename]' to execute a file
 
 Lots of TODOs:
 
-Near-future
- * better memory management
- * better error handling
- * better error abstractions (error type, stack-unwind)
- * better layout of code
- * documentation
- * tests
-
-Medium-future
+Short-term
  * legitimate hash tables
  * resizeable vector arrays
  * support for floating-point
  * file write
  * macros
 
-Far-future
+Long-term
  * a working garbage collector
  * a compiler
+ * dynamic linking from top-level
+
+Useful
+ * better memory management
+ * better error handling
+ * better error abstractions (error type, stack-unwind)
+ * better layout of code
+ * documentation
+ * tests

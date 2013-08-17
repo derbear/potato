@@ -182,8 +182,8 @@ struct obj* builtin_eval(struct obj* operand, struct env* env) {
 }
 
 struct obj* builtin_apply(struct obj* operand, struct env* env) {
-  obj_type types0[] = {FUNCTION, CELL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types0);
+  obj_type types[] = {FUNCTION, CELL};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
