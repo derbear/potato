@@ -156,6 +156,28 @@ struct obj* function(struct obj* operand, struct env* env) {
   return make_object(FUNCTION, f);
 }
 
+#define TYPEOFCASE(TYPE) {case TYPE: return make_object(SYMBOL, #TYPE);}
+
+struct obj* typeof(struct obj* operand, struct env* env) {
+  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
+  if (!processed) {
+    return operand;
+  }
+
+  switch (processed[0]->type) { // TODO safe to return const strings?
+    TYPEOFCASE(NUMBER);
+    TYPEOFCASE(SYMBOL);
+    TYPEOFCASE(LITERAL);
+    TYPEOFCASE(NIL);
+    TYPEOFCASE(PRIMITIVE);
+    TYPEOFCASE(FUNCTION);
+    TYPEOFCASE(STREAM);
+    TYPEOFCASE(CELL);
+  default:
+    return make_object(SYMBOL, "NONSTANDARD");
+  }
+}
+
 struct obj* ifelse(struct obj* operand, struct env* env) {
   struct obj** processed = prologue(&operand, env, 1, 0, 0, 1, 3, 0);
   if (!processed) {

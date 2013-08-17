@@ -74,6 +74,11 @@ struct obj* construct(struct obj* operand, struct env* environment);
 struct obj* define(struct obj* operand, struct env* environment);
 
 /**
+ * Return the type of its first argument.
+ */
+struct obj* typeof(struct obj* operand, struct env* environment);
+
+/**
  * Defines an anonymous function.
  *
  * The first argument should be a list of symbols, while the rest of the
