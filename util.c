@@ -9,6 +9,7 @@
 
 #include "data.h"
 #include "eval.h"
+#include "globals.h"
 
 int str_contains(char* str, char c) {
   char t;
@@ -92,6 +93,9 @@ struct obj** prologue(struct obj** operand,
   if (is_fixed_length) {
     if (size != num_args) {
       asprintf(&errorstrptr, fmt, num_args);
+      if (DEBUG) {
+	print_obj(*operand);
+      }
       *operand = make_object(ERROR, errorstrptr);
       return 0;
     }

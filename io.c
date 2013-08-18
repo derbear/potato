@@ -14,7 +14,7 @@
 typedef enum {
   END = -1,
   ERR = 0,
-  OPAR, CPAR, DOT, STR, QUOT, LIT,
+  OPAR, CPAR, DOT, STR, QUOT, LIT, BQUOT, COMM
 } e_token;
 
 typedef struct {
@@ -180,6 +180,10 @@ s_token next_token(struct reader* r) {
       return make_token(CPAR, 0);
     case '\'': // push backwards
       return make_token(QUOT, 0);
+    case '`':
+      return make_token(BQUOT, 0);
+    case ',':
+      return make_token(COMM, 0);
     case '.':
       return make_token(DOT, 0);
     case '"':
@@ -223,10 +227,9 @@ void token_push(struct reader* r, s_token t) {
 ////////// *** Parser
 //////////
 
-char* make_quotestr() {
-  static char* QUOTESTR = "quote";
-  char* ret = malloc(sizeof(QUOTESTR));
-  str_cpy(QUOTESTR, ret);
+char* make_quotestr(char* quotestr) {
+  char* ret = malloc(sizeof(quotestr));
+  str_cpy(quotestr, ret);
   return ret;
 }
 
@@ -302,8 +305,16 @@ struct obj* p_next_object(struct reader* r) {
     return next_list(r);
   } else if (n.type == END) {
     return make_object(DONE, 0);
-  } else if (n.type == QUOT) {
-    return make_object(CELL, make_cell(parse_atom(make_token(STR, make_quotestr())),
+  } else if (n.type == QUOT || n.type == BQUOT || n.type == COMM) {
+    char* name;
+    if (n.type == QUOT) {
+      name = "quote";
+    } else if (n.type == BQUOT) {
+      name = "backquote";
+    } else {
+      name = "unquote";
+    }
+    return make_object(CELL, make_cell(parse_atom(make_token(STR, make_quotestr(name))),
 				       make_object(CELL, make_cell(next_object(r),
 								   make_object(NIL, 0)))));
   } else if (n.type == CPAR) {

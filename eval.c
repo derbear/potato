@@ -148,11 +148,11 @@ struct obj* evaluate(struct obj* obj, struct env* env) {
   }
   nesting++;
   if (DEBUG) {
-    printf("Entered recursive depth: %d\n", nesting);
+    //printf("Entered recursive depth: %d\n", nesting);
   }
   obj = real_evaluate(obj, env);
   if (DEBUG) {
-    printf("Exited recursive depth: %d\n", nesting);
+    //printf("Exited recursive depth: %d\n", nesting);
   }
   nesting--;
   return obj;

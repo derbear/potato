@@ -55,17 +55,29 @@ struct obj* floor_div(struct obj* operand, struct env* env) {
   return make_small_object(NUMBER, result);
 }
 
-struct obj* equals(struct obj* operand, struct env* env) {
-  obj_type types[] = {NUMBER, NUMBER};
+struct obj* equals(struct obj* operand, struct env* env) { // TODO generalize
+  obj_type types[] = {NIL, NIL};
   struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;
   }
-  if (processed[0]->number == processed[1]->number) {
-    return processed[0];
-  } else {
+
+  if (processed[0]->type != processed[1]->type) {
     return make_object(NIL, 0);
   }
+
+  if (processed[0]->type == NUMBER) {
+    if (processed[0]->number == processed[1]->number) {
+      return processed[0];
+    }
+  } else if (processed[0]->type == NIL) {
+    return make_object(SYMBOL, "t");
+  } else if (processed[0]->type == SYMBOL) {
+    if (str_eq(processed[0]->string, processed[1]->string)) {
+      return processed[0];
+    }
+  }
+  return make_object(NIL, 0);
 }
 
 struct obj* lessthan(struct obj* operand, struct env* env) {

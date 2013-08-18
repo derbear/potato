@@ -1,11 +1,42 @@
-;;; Test code
+;;; List utils
 
-;(print 'program-arguments)
-;(print program-arguments)
+(define length
+  (func (list)
+    (if list
+	(+ 1 (length (rest list)))
+	0)))
 
-;(define opaque-stream (c-fopen "test.pot" "r"))
-;(print (c-fgetc opaque-stream))
-;(c-fclose opaque-stream)
+;;; Eval utils
+(define unquotef
+  (func (obj)
+    (list 'quote (list 'unquote obj))))
+
+(define unquote (macro unquotef))
+
+(define backquotef
+  (func (obj)
+    (define dequote
+      (func (obj depth)
+	(if (= (first obj) 'unquote)
+	    (if (= depth 1)
+		(eval (first (rest obj))) ; strip unquote, eval
+		(list 'unquote (dequote (first (rest obj)) (- depth 1))))
+	    obj)))
+
+    (define backquotefr
+      (func (obj depth)
+	(if (= (type obj) 'CELL)
+	    (if (= (first obj) 'unquote)
+		(dequote obj depth)
+		(if (= (first obj) 'backquote)
+		    (cons 'backquote
+			  (list (backquotefr (first (rest obj)) (+ depth 1))))
+		    (cons (backquotefr (first obj) depth)
+			  (backquotefr (rest obj) depth))))
+	    obj)))
+    (list 'quote (backquotefr obj 1))))
+
+(define backquote (macro backquotef))
 
 ;;; Logic and comparators
 
@@ -26,7 +57,7 @@
     (if p1
 	p1
 	(if p2 p2 nil))))
-    
+
 (define >
   (func (a b)
     (< b a)))
@@ -38,14 +69,6 @@
 (define >=
   (func (a b)
     (or (> a b) (= a b))))
-
-;;; List utils
-
-(define length
-  (func (list)
-    (if list
-	(+ 1 (length (rest list)))
-	0)))
 
 ;;; I/O
 
@@ -68,11 +91,13 @@
 
 ;;; Main code
 
+;; (define repl-closure
 (define repl
   (func ()
-    ;(format "> " sys-stdout)
+    ;; (format "> " sys-stdout)
     (print (eval (read)))
     (repl)))
+
 
 (if (= 1 (length program-arguments))
     (repl)
