@@ -14,6 +14,8 @@
 
 struct obj* list(struct obj*, struct env*); // forward declaration for apply()
 
+#define DEFAULT_FRAME_INITIAL_SIZE 1 // default env size for a function call
+
 struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
   if (operator->type == FUNCTION || operator->type == MACRO) {
     struct function* func = operator->data;
@@ -32,7 +34,7 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
 
     // set up called function environment
     struct env* call_env;
-    call_env = make_env(parent, 10);
+    call_env = make_env(parent, DEFAULT_FRAME_INITIAL_SIZE);
     while (params->type != NIL) {
       struct obj* symbol = params->cell->first;
       bind(call_env, symbol->string, operand->cell->first);
@@ -97,9 +99,13 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	env = ((struct thunk*) (applied->data))->env;
 	continue;
       } else if (operator->type == MACRO) {
+	if (DEBUG) {
+	  printf("macro expansion: ");
+	  print_obj(applied);
+	}
 	obj = applied;
 	continue;
-      } else { // any builtin operator that directly returns 
+      } else { // any builtin operator that directly returns
 	return applied;
       }
     case STREAM:
@@ -345,8 +351,12 @@ struct obj* define(struct obj* operand, struct env* env) {
 		      "<DEFINE> must be a symbol");
   }
   struct obj* value = evaluate(processed[1], env);
-  bind(env, processed[0]->string, value);
-  return processed[0];
+  if (bind(env, processed[0]->string, value)) {
+    return processed[0];
+  } else {
+    printf("%s", processed[0]->string);
+    return make_error("symbol is already defined");
+  }
 }
 
 struct obj* function(struct obj* operand, struct env* env) {

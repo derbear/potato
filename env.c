@@ -26,6 +26,10 @@ s_entry make_entry(char* name, struct obj* object) {
 }
 
 struct env* make_env(struct env* parent, int size) {
+  if (size == 0) {
+    printf("ERROR: TRIED TO MAKE ENVIRONMENT OF ZERO SIZE\n");
+    exit(1);
+  }
   struct env* env = malloc(sizeof(struct env));
   env->parent = parent;
   env->list = malloc(sizeof(s_entry) * size);
@@ -34,18 +38,25 @@ struct env* make_env(struct env* parent, int size) {
   return env;
 }
 
-void bind(struct env* env, char* name, struct obj* obj) {
-  if (env->next_free == env->size) {
-    printf("ERROR: ENV FULL\n");
-    exit(1);
-  }
-  env->list[(env->next_free)++] = make_entry(name, obj);
+void expand_env(struct env* env) {
+  env->size *= 2;
+  env->list = realloc(env->list, sizeof(s_entry) * env->size);
 }
 
-#define lookup(x,y) lookup_helper((x),(y),1)
-#define lookup_local(x,y) lookup_helper((x),(y),0)
+int bind(struct env* env, char* name, struct obj* obj) {
+  if (env->next_free == env->size) {
+    expand_env(env);
+  }
 
-struct obj* lookup_helper(struct env* env, char* name, int recursive) {
+  lookup_local(env, name);
+  if (lookup_local(env, name)->type != ERROR) {
+    return 0;
+  }
+  env->list[(env->next_free)++] = make_entry(name, obj);
+  return 1;
+}
+
+struct obj* lookup_func(struct env* env, char* name, int recursive) {
   int i = 0;
   while (i < env->next_free) {
     s_entry entry = env->list[i];
@@ -57,8 +68,8 @@ struct obj* lookup_helper(struct env* env, char* name, int recursive) {
   if (recursive && env->parent) {
     return lookup(env->parent, name);
   }
-  if (DEBUG) {
-    printf("Looked up: %s", name);
+  if (DEBUG && !recursive) {
+    // printf("Looked up: %s", name);
   }
   return make_error("cannot find symbol");
 }

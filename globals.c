@@ -27,8 +27,10 @@ struct obj* global(struct obj* operand, struct env* env) {
   return define(operand, global_env);
 }
 
+#define DEFAULT_GLOBAL_ENVIRONMENT_INITIAL_SIZE 50
+
 void initialize() {
-  global_env = make_env(0, 100);
+  global_env = make_env(0, DEFAULT_GLOBAL_ENVIRONMENT_INITIAL_SIZE);
   stdin_reader = make_reader(stdin);
 
   register_primitive("list", &list);

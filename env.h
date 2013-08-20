@@ -15,9 +15,12 @@ struct env;
 struct env* make_env(struct env* parent, int size);
 
 /**
- * Binds the given name to an object in the given lookup environment.
+ * Binds the given name to an object in the given lookup environment unless it
+ * is already bound.
+ *
+ * Returns 1 on success and 0 on failure.
  */
-void bind(struct env*, char* name, struct obj* obj);
+int bind(struct env*, char* name, struct obj* obj);
 
 /**
  * Find the parent of some environment.
@@ -27,14 +30,14 @@ struct env* parent(struct env*);
 /**
  * Standard recursive name lookup.
  */
-#define lookup(x,y) lookup_helper((x),(y),1)
+#define lookup(env,name) lookup_func((env),(name),1)
 
 /**
  * Look up a name only in the current scope.
  */
-#define lookup_local(x,y) lookup_helper((x),(y),0)
+#define lookup_local(env,name) lookup_func((env),(name),0)
 
-struct obj* lookup_helper(struct env* env, char* name, int recursive);
+struct obj* lookup_func(struct env* env, char* name, int recursive);
 
 
 #endif
