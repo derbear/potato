@@ -7,7 +7,7 @@
 struct env; // forward declaration
 
 typedef enum {
-  DONE = -1,
+  DONE = -1, // returned on EOF
   ERROR = 0,
   SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION, MACRO,
   LITERAL, STREAM,

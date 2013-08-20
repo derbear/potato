@@ -47,6 +47,7 @@ void initialize() {
   register_primitive("type", &typeof);
   register_primitive("macro", &mark_macro);
   register_primitive("if", &ifelse);
+  register_primitive("open", &open);
   register_primitive("eval", &builtin_eval);
   register_primitive("apply", &builtin_apply);
   register_primitive("read", &builtin_read);

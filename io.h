@@ -36,4 +36,9 @@ struct reader* make_reader(FILE*);
  */
 struct obj* next_object(struct reader*);
 
+/**
+ * Close the reader's associated file object, returning 0 only on failure.
+ */
+int reader_fclose(struct reader*);
+
 #endif

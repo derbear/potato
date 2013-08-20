@@ -105,6 +105,11 @@ struct obj* mark_macro(struct obj* operand, struct env* environment);
 struct obj* ifelse(struct obj* operand, struct env* environment);
 
 /**
+ * Open up a file for reading, returning a STREAM object.
+ */
+struct obj* open(struct obj* operand, struct env* environment);
+
+/**
  * Evaluates the first argument.
  */
 struct obj* builtin_eval(struct obj* operand, struct env* environment);

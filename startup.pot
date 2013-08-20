@@ -6,37 +6,44 @@
 	(+ 1 (length (rest list)))
 	0)))
 
+(define append
+  (func (l1 l2)
+    (if l1
+	(cons (first l1) (append (rest l1) l2))
+	l2)))
+
 ;;; Eval utils
-(define unquotef
-  (func (obj)
-    (list 'quote (list 'unquote obj))))
 
-(define unquote (macro unquotef))
+;; (define unquotef
+;;   (func (obj)
+;;     (list 'quote (list 'unquote obj))))
 
-(define backquotef
-  (func (obj)
-    (define dequote
-      (func (obj depth)
-	(if (= (first obj) 'unquote)
-	    (if (= depth 1)
-		(eval (first (rest obj))) ; strip unquote, eval
-		(list 'unquote (dequote (first (rest obj)) (- depth 1))))
-	    obj)))
+;; (define unquote (macro unquotef))
 
-    (define backquotefr
-      (func (obj depth)
-	(if (= (type obj) 'CELL)
-	    (if (= (first obj) 'unquote)
-		(dequote obj depth)
-		(if (= (first obj) 'backquote)
-		    (cons 'backquote
-			  (list (backquotefr (first (rest obj)) (+ depth 1))))
-		    (cons (backquotefr (first obj) depth)
-			  (backquotefr (rest obj) depth))))
-	    obj)))
-    (list 'quote (backquotefr obj 1))))
+;; (define backquotef
+;;   (func (obj)
+;;     (define dequote
+;;       (func (obj depth)
+;; 	(if (= (first obj) 'unquote)
+;; 	    (if (= depth 1)
+;; 		(eval (first (rest obj))) ; strip unquote, eval
+;; 		(list 'unquote (dequote (first (rest obj)) (- depth 1))))
+;; 	    obj)))
 
-(define backquote (macro backquotef))
+;;     (define backquotefr
+;;       (func (obj depth)
+;; 	(if (= (type obj) 'CELL)
+;; 	    (if (= (first obj) 'unquote)
+;; 		(dequote obj depth)
+;; 		(if (= (first obj) 'backquote)
+;; 		    (cons 'backquote
+;; 			  (list (backquotefr (first (rest obj)) (+ depth 1))))
+;; 		    (cons (backquotefr (first obj) depth)
+;; 			  (backquotefr (rest obj) depth))))
+;; 	    obj)))
+;;     (list 'quote (backquotefr obj 1))))
+
+;; (define backquote (macro backquotef))
 
 ;;; Logic and comparators
 

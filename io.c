@@ -35,6 +35,7 @@ struct reader {
   int charbvalid;
   s_token tokebuffer;
   int tokebvalid;
+  int closed;
   int linenumber;
 }; // @heap
 
@@ -43,6 +44,7 @@ struct reader* make_reader(FILE* stream) {
   ret->src = stream;
   ret->charbvalid = 0;
   ret->tokebvalid = 0;
+  ret->closed = 0;
   ret->linenumber = 1;
   return ret;
 }
@@ -324,6 +326,10 @@ struct obj* p_next_object(struct reader* r) {
 }
 
 struct obj* next_object(struct reader* r) {
+  if (r->closed) {
+    return make_error("stream has already been closed");
+  }
+
   struct obj* ret = p_next_object(r);
   if (ret->type == ERROR) { // TODO alloc more smartly
     char* errorstrptr;
@@ -331,4 +337,9 @@ struct obj* next_object(struct reader* r) {
     ret = make_object(ERROR, errorstrptr);
   }
   return ret;
+}
+
+int reader_fclose(struct reader* r) {
+  r->closed = 1;
+  return fclose(r->src);
 }

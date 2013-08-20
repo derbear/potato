@@ -216,6 +216,19 @@ struct obj* ifelse(struct obj* operand, struct env* env) {
   return make_object(THUNK, deferred);
 }
 
+struct obj* open(struct obj* operand, struct env* env) {
+  obj_type types[] = {LITERAL};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
+  if (!processed) {
+    return operand;
+  }
+
+  FILE* f = fopen(processed[0]->string, "r");
+  struct reader* reader = make_reader(f);
+  struct obj* stream = make_object(STREAM, reader);
+  return stream;
+}
+
 struct obj* builtin_eval(struct obj* operand, struct env* env) {
   struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
   if (!processed)  {
@@ -244,7 +257,14 @@ struct obj* builtin_read(struct obj* operand, struct env* env) {
     return next_object(stdin_reader);
   } else {
     struct cell* cell = operand->data;
-    return next_object(cell->first->data);
+    struct obj* ret = next_object(cell->first->data);
+
+    if (ret->type == DONE) {
+      if (reader_fclose(cell->first->data)) {
+	return make_error("stream failed to close");
+      }
+    }
+    return ret;
   }
 }
 
