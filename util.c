@@ -77,6 +77,18 @@ struct obj* unflatten(struct obj** array, int size) {
   return list;
 }
 
+int list_len(struct obj* obj) {
+  if (obj->type == NIL) {
+    return 0;
+  }
+  if (obj->type != CELL) {
+    return -1;
+  }
+  int ret = list_len(obj->cell->rest);
+  if (ret < 0) return ret;
+  else return ret+1;
+}
+
 struct obj** prologue(struct obj** operand,
 		      struct env* env,
 		      int is_fixed_length,

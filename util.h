@@ -54,6 +54,13 @@ struct obj** flatten(struct obj* list, int* size); // @heap
 struct obj* unflatten(struct obj** array, int size);
 
 /**
+ * Returns the length of its given argument.
+ *
+ * If its given argument is not a well-formed list, then this returns -1.
+ */
+int list_len(struct obj* obj);
+
+/**
  * Preprocesses the operands during a function call.
  *
  * If is_fixed_length is nonzero, this checks the arguments against num_args.

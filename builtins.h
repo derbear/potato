@@ -69,6 +69,18 @@ struct obj* quote(struct obj* operand, struct env* environment);
 struct obj* construct(struct obj* operand, struct env* environment);
 
 /**
+ * Creates a list from the rest of its arguments or returns NIL if no arguments
+ * were provided.
+ *
+ * Becuase this function first evaluates each operand, this can be used as a
+ * shortcut for "preprocessing" a list of arguments, which is what
+ * most functions generally want to do.
+ *
+ * This function can be called directly as a primitive operator.
+ */
+struct obj* list(struct obj* operand, struct env*);
+
+/**
  * Binds its first argument, a symbol, to the value of its second argument.
  */
 struct obj* define(struct obj* operand, struct env* environment);
