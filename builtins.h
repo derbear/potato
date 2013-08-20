@@ -82,6 +82,8 @@ struct obj* list(struct obj* operand, struct env*);
 
 /**
  * Binds its first argument, a symbol, to the value of its second argument.
+ *
+ * Raises an error if the argument has already been bound.
  */
 struct obj* define(struct obj* operand, struct env* environment);
 

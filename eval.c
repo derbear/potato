@@ -397,6 +397,10 @@ struct obj* typeof(struct obj* operand, struct env* env) {
 struct obj* mark_macro(struct obj* operand, struct env* env) {
   obj_type types[] = {FUNCTION};
   struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
+  if (!processed) {
+    return operand;
+  }
+
   struct obj* copy = make_object(MACRO, processed[0]->data);
   return copy;
 }

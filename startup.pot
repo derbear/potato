@@ -12,6 +12,12 @@
 	(cons (first l1) (append (rest l1) l2))
 	l2)))
 
+(define map
+  (func (f list)
+    (if list
+	(cons (f (first list)) (map f (rest list)))
+	list))) ; nil
+
 ;;; Eval utils
 
 ;; (define unquotef

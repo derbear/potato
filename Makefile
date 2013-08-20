@@ -25,7 +25,7 @@ eval.o: data.h globals.h util.h data.h io.h env.h eval.h eval.c
 io.o: util.h data.h io.h io.c
 util.o: util.h util.c data.h eval.h
 globals.o: globals.h globals.c env.h data.h builtins.h eval.h
-data.o: data.h data.c
+data.o: data.h data.c globals.h eval.h util.h
 env.o: env.h env.c util.h globals.h
 
 extensions.o: ext_bind_stdio.c ext_vector.c ${CORE}

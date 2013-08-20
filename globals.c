@@ -22,7 +22,7 @@ void register_primitive(char* name, struct obj* (*func)(struct obj*,
   bind(global_env, name, make_object(PRIMITIVE, wrapped));
 }
 
-/* stopgap */
+/* TODO this is a stopgap to allow testing - remove later */
 struct obj* global(struct obj* operand, struct env* env) {
   return define(operand, global_env);
 }
