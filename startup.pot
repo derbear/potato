@@ -59,17 +59,19 @@
 	nil
 	'true)))
 
-(define and ; TODO short-circuit
+(define andf
   (func (p1 p2)
-    (if p1
-	(if p2 p2 nil)
-	nil)))
+    (list 'if p1
+	  (list 'if p2 ''t nil)
+	  nil)))
+(define and (macro andf))
 
-(define or ; TODO short-circuit
+(define orf
   (func (p1 p2)
-    (if p1
-	p1
-	(if p2 p2 nil))))
+    (list 'if p1
+	  ''t
+	  (list 'if p2 ''t nil))))
+(define or (macro orf))
 
 (define >
   (func (a b)

@@ -354,7 +354,9 @@ struct obj* define(struct obj* operand, struct env* env) {
   if (bind(env, processed[0]->string, value)) {
     return processed[0];
   } else {
-    printf("%s", processed[0]->string);
+    if (DEBUG) {
+      printf("tried to define: %s", processed[0]->string);
+    }
     return make_error("symbol is already defined");
   }
 }
