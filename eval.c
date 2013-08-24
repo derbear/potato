@@ -424,6 +424,9 @@ struct obj* ifelse(struct obj* operand, struct env* env) {
   }
 
   struct obj* ret = evaluate(processed[0], env);
+  if (ret->type == ERROR) {
+    return ret;
+  }
   struct thunk* deferred = malloc(sizeof(struct thunk));
   deferred->env = env;
   if (ret->type == NIL) {
