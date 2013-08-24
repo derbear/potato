@@ -452,18 +452,26 @@ struct obj* open(struct obj* operand, struct env* env) {
 
 struct obj* builtin_eval(struct obj* operand, struct env* env) {
   struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
-  if (!processed)  {
+  if (!processed) {
     return operand;
   }
   return evaluate(processed[0], env);
 }
 
 struct obj* builtin_apply(struct obj* operand, struct env* env) {
-  obj_type types[] = {FUNCTION, CELL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
+  // prologue() function isn't sophisticated enough to do FUNCTION | MACRO
+  // so accept anything for first arg and fail later
+  // (this will evaluate second argument even if first does not fit)
+  obj_type types1[] = {NIL, CELL};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types1);
   if (!processed) {
     return operand;
+  } else if (!(processed[0]->type == FUNCTION ||
+	       processed[0]->type == PRIMITIVE ||
+	       processed[0]->type == MACRO)) {
+    return make_error("apply requires a callable as its first argument");
   }
+
   return apply(processed[0], processed[1], env);
 }
 
