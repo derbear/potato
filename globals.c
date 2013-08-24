@@ -55,6 +55,8 @@ void initialize() {
   register_primitive("read", &builtin_read);
   register_primitive("print", &builtin_print);
   register_primitive("load", &load);
+  register_primitive("set-first", &set_first);
+  register_primitive("set-rest", &set_rest);
 
   register_primitive("global", &global);
 }

@@ -538,3 +538,25 @@ struct obj* load(struct obj* operand, struct env* env) {
   printf("ERROR IN <LOAD>\n"); // should never reach here
   exit(1);
 }
+
+struct obj* set_first(struct obj* operand, struct env* env) {
+  obj_type types[] = {CELL, NIL};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
+  }
+
+  processed[0]->cell->first = processed[1];
+  return make_object(NIL, 0);
+}
+
+struct obj* set_rest(struct obj* operand, struct env* env) {
+  obj_type types[] = {CELL, NIL};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
+  }
+
+  processed[0]->cell->rest = processed[1];
+  return make_object(NIL, 0);
+}

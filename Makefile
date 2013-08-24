@@ -11,9 +11,6 @@ run: main
 test: main
 	./${EXECUTABLE} test.pot
 
-dist-source:
-	tar -czf sources.tar.gz builtins.h data.h eval.h globals.h io.h util.h data.c eval.c globals.c io.c ioplus.c iobasic.c main.c util.c test.pot startup.pot Makefile README extensions.h ext_bind_stdio.h ext_bind_stdio.c
-
 main: ${OBJECTS}
 	cc ${CFLAGS} -o potato ${OBJECTS}
 

@@ -151,4 +151,10 @@ struct obj* builtin_print(struct obj* operand, struct env* environment);
  */
 struct obj* load(struct obj* operand, struct env* environment);
 
+/**
+ * Destructively sets the first and second elements of a cell, respectively.
+ */
+struct obj* set_first(struct obj* operand, struct env* environment);
+struct obj* set_rest(struct obj* operand, struct env* environment);
+
 #endif
