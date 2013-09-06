@@ -56,7 +56,7 @@ struct obj* ext_vector_from_string(struct obj* operand, struct env* env) {
   if (!processed) {
     return operand;
   }
-  
+
   char* str = processed[0]->string;
   int length = str_len(str);
   vector* v = malloc(sizeof(vector));
@@ -76,7 +76,7 @@ struct obj* ext_vector_length(struct obj* operand, struct env* env) {
   if (!processed) {
     return operand;
   }
-  
+
   vector* v = processed[0]->data;
   return make_small_object(NUMBER, v->size);
 }
@@ -87,7 +87,7 @@ struct obj* ext_vector_index(struct obj* operand, struct env* env) {
   if (!processed) {
     return operand;
   }
-  
+
   vector* v = processed[0]->data;
   int index = processed[1]->number;
   if (index >= v->size) {
@@ -102,7 +102,7 @@ struct obj* ext_vector_set(struct obj* operand, struct env* env) {
   if (!processed) {
     return operand;
   }
-  
+
   vector* v = processed[0]->data;
   int index = processed[1]->number;
   if (index >= v->size) {
@@ -124,13 +124,13 @@ struct obj* ext_vector_insert(struct obj* operand, struct env* env) {
   if (!processed) {
     return operand;
   }
-  
+
   vector* v = processed[0]->data;
   int index = processed[1]->number;
   if (index > v->size) {
     return make_out_of_bounds();
   }
-  
+
   if (v->size == v->capacity) {
     expand(v);
   }
@@ -148,7 +148,7 @@ struct obj* ext_vector_remove(struct obj* operand, struct env* env) {
   if (!processed) {
     return operand;
   }
-  
+
   vector* v = processed[0]->data;
   int index = processed[1]->number;
   if (index >= v->size) {

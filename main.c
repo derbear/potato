@@ -27,7 +27,7 @@ void import(void (*init_func)()) {
 int bootstrap(int argc, char* argv[]) {
   import(ext_bind_stdio);
   import(ext_vector);
-  
+
   struct obj** translated = malloc(sizeof(struct obj*) * argc);
   for (int i = 0; i < argc; i++) {
     translated[i] = make_object(LITERAL, argv[i]); // TODO is this safe?
@@ -37,7 +37,7 @@ int bootstrap(int argc, char* argv[]) {
   struct obj* str = make_object(LITERAL, STARTUP_FILE);
   struct obj* arg = make_object(CELL, make_cell(str, make_object(NIL, 0)));
   struct obj* result = load(arg, global_env);
-  
+
   if (result->type == NIL) {
     return 0;
   }
