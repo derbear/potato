@@ -1,3 +1,10 @@
+This is an archive of the individual commits between 0.1 and 0.2 which were
+squashed before merging into the master branch. Most of the squashed commits
+are referred to from f9951f337617e8b1ffb0290cdc433547c4278ebc.
+
+Below is the original text of the README file.
+
+================================================================================
 POTATO is (almost) a Scheme interpreter written in C for fun and learning in my spare time.
 
 `make' to build
