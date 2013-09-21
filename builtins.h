@@ -124,6 +124,11 @@ struct obj* ifelse(struct obj* operand, struct env* environment);
 struct obj* open(struct obj* operand, struct env* environment);
 
 /**
+ * Create an error object from a string.
+ */
+struct obj* builtin_error(struct obj* operand, struct env* environment);
+
+/**
  * Evaluates the first argument.
  */
 struct obj* builtin_eval(struct obj* operand, struct env* environment);

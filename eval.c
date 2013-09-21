@@ -23,6 +23,10 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
     struct obj* params = func->params;
     struct env* parent = func->parent;
     if (list_len(params) != list_len(operand)) {
+      if (DEBUG) {
+	printf("\nDEBUG: function called with incorrect number of parameters: ");
+	print_obj(operator);
+      }
       return make_error("function called with incorrect number "
 			 "of parameters");
     }
@@ -90,6 +94,10 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
     case CELL:
       operator = evaluate(obj->cell->first, env);
       if (operator->type == ERROR) {
+	if (DEBUG) {
+	  printf("\nDEBUG: operator error: ");
+	  print_obj(obj->cell->first);
+	}
 	return operator;
       }
       applied = apply(operator, obj->cell->rest, env);
@@ -106,6 +114,13 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	obj = applied;
 	continue;
       } else { // any builtin operator that directly returns
+	if (DEBUG) {
+	  if (applied->type == ERROR) {
+	    printf("in function: ");
+	    print_obj(obj->cell->first);
+	    printf("\n");
+	  }
+	}
 	return applied;
       }
     case STREAM:
@@ -448,6 +463,18 @@ struct obj* open(struct obj* operand, struct env* env) {
   struct reader* reader = make_reader(f);
   struct obj* stream = make_object(STREAM, reader);
   return stream;
+}
+
+struct obj* builtin_error(struct obj* operand, struct env* env) {
+  obj_type types[] = {LITERAL};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
+  if (!processed) {
+    return operand;
+  }
+
+  struct obj* msgobj = processed[0];
+  char* msg = msgobj->string;
+  return make_error(msg);
 }
 
 struct obj* builtin_eval(struct obj* operand, struct env* env) {
