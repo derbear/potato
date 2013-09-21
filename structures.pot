@@ -1,0 +1,60 @@
+;; lookups
+
+(define make-small-dict ; list of nil-terminated cells
+			; e.g. ((2 . 3) (4 . 5) nil)
+  (func ()
+    '(small-dict ())))
+
+(define dict-entries
+  (func (dict)
+    (rest dict)))
+
+(define dict-get
+  (func (dict key)
+    (define get
+      (func (entries key)
+	(if (first entries)
+	    (if (= (first (first entries)) key)
+		(rest (first entries))
+		(get (rest entries) key))
+	    nil)))
+    (get (dict-entries dict) key)))
+
+(define dict-put
+  (func (dict key value)
+    (define put
+      (func (entries key value)
+	(if (first entries)
+	    (if (= (first (first entries)) key)
+		;; return replaced value but make sure it's set
+		((func (x)
+		   (set-rest (first entries) value)
+		   x)
+		 (rest (first entries)))
+		(put (rest entries) key value))
+	    ((func ()
+	       (set-first entries (cons key value))
+	       (set-rest entries (list nil)))))))
+    (put (dict-entries dict) key value)))
+
+(define structures-internal-test
+  (func ()
+    (define s (make-small-dict))
+    (format "contents of s: " sys-stdout)
+    (print (dict-entries s))
+    (format "s[3] = 4: " sys-stdout)
+    (print (dict-put s 3 4))
+    (format "contents of s: " sys-stdout)
+    (print (dict-entries s))
+    (format "s[2] = 20: " sys-stdout)
+    (print (dict-put s 2 20))
+    (format "contents of s: " sys-stdout)
+    (print (dict-entries s))
+    (format "get 3: " sys-stdout)
+    (print (dict-get s 3))
+    (format "s[3] = 5: " sys-stdout)
+    (print (dict-put s 3 5))
+    (format "get 3: " sys-stdout)
+    (print (dict-get s 3))
+    (format "contents of s: " sys-stdout)
+    (print (dict-entries s))))

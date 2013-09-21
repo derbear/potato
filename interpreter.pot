@@ -1,0 +1,135 @@
+(load "structures.pot")
+
+;; errors
+(define make-error
+  (func (str)
+    (error str)))
+
+;; namespaces
+(define make-namespace
+  (func ()
+    (make-small-dict)))
+(define lookup
+  (func (nspace symbol)
+    ; (format "lookup: " sys-stdout)
+    (print symbol)
+    ((func (looked-up)
+       (if looked-up
+	   (cons 't looked-up)
+	   (make-error "symbol '' unbound")))
+     (dict-get nspace symbol)))) ; TODO format
+(define soft-bind
+  (func (nspace symbol value)
+    (format "soft-bind: " sys-stdout)
+    (print symbol)
+    (if (dict-get nspace symbol)
+	(make-error "symbol '' already bound") ; TODO format
+	(dict-put nspace symbol value))))
+(define hard-bind
+  (func (nspace symbol value)
+    (dict-put nspace symbol value)))
+
+;; types
+(define object-type-tag 'TYPED-OBJECT)
+(define make-type
+  (func (typename-symbol)
+    typename-symbol))
+(define create-typed-object
+  (func (object-type object)
+    (list object-type-tag object-type object)))
+(define type-of
+  (func (typed-object)
+    (if (= (type typed-object) 'CELL)
+	(if (= (first typed-object) object-type-tag)
+	    (first (rest typed-object))
+	    nil)
+	nil)))
+(define raw-data-of-typed-object
+  (func (typed-object)
+    (if (type-of typed-object)
+	(first (rest (rest typed-object)))
+	typed-object))) ; if non-typed
+(define set-type
+  (func (typed-object target-type)
+    (if (type-of typed-object)
+	((func (prev-type)
+	   (set-first (rest typed-object) target-type)
+	   prev-type)
+	 (type-of typed-object))
+	nil)))
+	 
+;; evaluation
+;; (define make-callable ; abstracted as (bind-symbol . (body)) tagged with
+;; 		      ; symbol 'callable
+;;   (func (bind-symbol body) ; on call, arguments are bound to bind-symbol
+;;     (create-typed-object (make-type 'callable) (cons bind-symbol body))))
+
+;; (define call-body
+;;   (func (callable-object)
+;;     (raw-data-of-typed-object callable-object)
+
+(define callable?
+  (func (operator)
+    (or (= (type-of operator) (make-type 'callable))
+	(= (type-of operator) (make-type 'primitive)))))
+
+;; converts arg into callable form
+(define raw-callable
+  (func (operator)
+    (if (= (type-of operator) (make-type 'primitive))
+	(raw-data-of-typed-object operator)
+	nil))) ; TODO return callable body
+;; calls the operators in _this_ namespace
+(define direct-call-operator-object
+  (func (operands)
+    (eval (print operands))))
+(define direct-call-operator (create-typed-object (make-type 'primitive)
+						  direct-call-operator-object))
+(define apply-operator
+  (func (operator operands)
+    (if (callable? operator)
+	((raw-callable operator) operands)
+	(format "cannot apply non-callable to operands" sys-stdout))))
+
+(define evaluate-under-namespace
+  (func (nspace expr)
+    (if (= (type expr) 'CELL)
+	(apply-operator (evaluate-under-namespace nspace (first expr))
+			(rest expr))
+	(if (= (type expr) 'SYMBOL)
+	    ((func (looked-up)
+	       (if (= (type looked-up) 'ERROR)
+		   looked-up
+		   (rest looked-up))) ; remove the 't in front
+	     (lookup nspace expr))
+	    expr))))
+
+;; defaults
+(define populate-default-namespace
+  (func (nspace)
+    (hard-bind nspace '_ direct-call-operator)
+    nspace))
+
+(define make-interpreter
+  (func ()
+    (define global-namespace (populate-default-namespace (make-namespace)))
+    (define top-level-evaluate
+      (func (expr)
+	((func (result)
+	   (if (= (type result) 'ERROR)
+	       (print result)
+	       result))
+	 (evaluate-under-namespace global-namespace expr))))
+    top-level-evaluate))
+
+;; (define test-interpreter
+;;   (func ()
+;;     (define almond-type (make-type 'almond))
+;;     (define almond-object (create-typed-object almond-type 3))
+;;     (define coconut-type (make-type 'coconut))
+;;     (print almond-type)
+;;     (print almond-object)
+;;     (print (type-of almond-object))
+;;     (set-type almond-object coconut-type)
+;;     (print almond-object)
+;;     (print (type-of 3))))

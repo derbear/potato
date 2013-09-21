@@ -6,11 +6,14 @@ POTATO is (almost) a Scheme interpreter written in C for fun and learning in my 
 `./potato' to run
 `./potato [filename]' to execute a file
 
+Horizon
+ * proper formatted print
+ * dynamic linking from top-level
+
 Long-term
  * support for floating-point
  * a working garbage collector
  * a compiler, optimizations
- * dynamic linking from top-level
 
 Useful
  * better memory management
