@@ -9,6 +9,8 @@
 #include "eval.h" // for debug
 #include "globals.h" // for debug
 
+int OBJECTS_VERSION = 1;
+
 struct cell* make_cell(struct obj* first, struct obj* rest) {
   struct cell* cell = malloc(sizeof(struct cell));
   cell->first = first;

@@ -1,4 +1,4 @@
-POTATO is (almost) a Scheme interpreter written in C for fun and learning in my spare time.
+POTATO is an interpreter for a LISP/Scheme-like language written in C.
 
 `make' to build
 `make clean' to cleanup
@@ -6,17 +6,9 @@ POTATO is (almost) a Scheme interpreter written in C for fun and learning in my 
 `./potato' to run
 `./potato [filename]' to execute a file
 
-Long-term
- * support for floating-point
- * a working garbage collector
- * a compiler, optimizations
- * dynamic linking from top-level
-
-Useful
- * better memory management
- * better error handling
- * better error abstractions (error type, stack-unwind)
- * better layout of code
- * documentation
- * tests
- * errors print themselves?
+TODO
+ * assertions
+ * debugger
+ * garbage-collection
+ * compiler
+ * floating-point

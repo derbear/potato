@@ -1,10 +1,38 @@
+(load "bind-native.pot")
+
 ;;; List utils
+
+(define list (func a a))
+
+;; return -1 * number of cells if not nil-terminated e.g. (1 2 3 . 4) returns -4
+;; return nil if malformed
 
 (define length
   (func (list)
+    (define length-helper
+      (func (remaining count)
+	(if remaining
+	    (if (= (type remaining) 'CELL)
+		(length-helper (rest remaining) (+ 1 count))
+		(* -1 (+ 1 count)))
+	    count)))
+    (length-helper list 0)))
+
+(define last
+  (func (list)
     (if list
-	(+ 1 (length (rest list)))
-	0)))
+	(if (rest list)
+	    (last (rest list))
+	    (first list))
+	list))) ; nil
+
+(define second
+  (func (list)
+    (if list
+	(if (rest list)
+	    (first (rest list))
+	    (make-error "cannot get second of length-1 list"))
+	(make-error "cannot get second of length-0 list"))))
 
 (define append
   (func (l1 l2)
@@ -17,39 +45,6 @@
     (if list
 	(cons (f (first list)) (map f (rest list)))
 	list))) ; nil
-
-;;; Eval utils
-
-;; (define unquotef
-;;   (func (obj)
-;;     (list 'quote (list 'unquote obj))))
-
-;; (define unquote (macro unquotef))
-
-;; (define backquotef
-;;   (func (obj)
-;;     (define dequote
-;;       (func (obj depth)
-;; 	(if (= (first obj) 'unquote)
-;; 	    (if (= depth 1)
-;; 		(eval (first (rest obj))) ; strip unquote, eval
-;; 		(list 'unquote (dequote (first (rest obj)) (- depth 1))))
-;; 	    obj)))
-
-;;     (define backquotefr
-;;       (func (obj depth)
-;; 	(if (= (type obj) 'CELL)
-;; 	    (if (= (first obj) 'unquote)
-;; 		(dequote obj depth)
-;; 		(if (= (first obj) 'backquote)
-;; 		    (cons 'backquote
-;; 			  (list (backquotefr (first (rest obj)) (+ depth 1))))
-;; 		    (cons (backquotefr (first obj) depth)
-;; 			  (backquotefr (rest obj) depth))))
-;; 	    obj)))
-;;     (list 'quote (backquotefr obj 1))))
-
-;; (define backquote (macro backquotef))
 
 ;;; Logic and comparators
 
@@ -85,6 +80,51 @@
   (func (a b)
     (or (> a b) (= a b))))
 
+;; (cond (<cond1> <expr1>)
+;;       (<cond2> <expr2>)
+;;       ...
+;;       (<condn> <exprn>)
+;;       (else <expr'>))
+;; if else clause is missing, then implicit (else nil)
+;; generates equivalent chained if-expression
+(define condf
+  (func switch-list
+    (define cook-cond-statement
+      (func (conditional consequence alternative)
+	(list 'if conditional consequence alternative)))
+    (define condf-helper
+      (func (switch-list)
+	(if (rest switch-list)
+	    (cook-cond-statement (first (first switch-list))
+				 (second (first switch-list))
+				 (condf-helper (rest switch-list)))
+	    (if (= (first (first switch-list)) 'else) ; (cond (else <expr>))
+		(second (first switch-list))
+		nil))))
+    (condf-helper switch-list)))
+
+(define cond (macro condf))
+
+;;; Control flow
+
+;; evaluate expressions under once-evaluated local name-bindings
+;; args should look like (<bindings> <expr1> <expr2> ...)
+;; bindings looks something like ((a . 3) (b . 5))
+;; cannot do dependent bindings like ((a . 3) (b . (+ a 2)))
+;;;;;
+;;    Generates:
+;;    ((func param-list expressions) value-list)))
+;;;;;
+(define letf
+  (func args
+    (define bindings (first args))
+    (define param-list (map first bindings))
+    (define value-list (map (func (pair) (rest pair)) bindings))
+    (define expressions (rest args))
+    (cons (cons 'func (cons param-list expressions)) value-list)))
+
+(define let (macro letf))
+
 ;;; I/O
 
 (define format
@@ -106,14 +146,18 @@
 
 ;;; Main code
 
+(load "interpreter.pot")
+
+(define bootstrap-eval (make-interpreter))
+
 ;; (define repl-closure
 (define repl
-  (func ()
-    ;; (format "> " sys-stdout)
-    (print (eval (read)))
-    (repl)))
-
+  (func (prompt)
+    (format prompt sys-stdout)
+    (print (bootstrap-eval (read)))
+;    (print (eval (read)))
+    (repl prompt)))
 
 (if (= 1 (length program-arguments))
-    (repl)
+    (repl "> ")
     (load (first (rest program-arguments))))

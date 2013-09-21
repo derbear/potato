@@ -56,7 +56,8 @@ struct obj* unflatten(struct obj** array, int size);
 /**
  * Returns the length of its given argument.
  *
- * If its given argument is not a well-formed list, then this returns -1.
+ * If its given argument is not a well-formed list or is of the wrong
+ * data type, then this returns -1.
  */
 int list_len(struct obj* obj);
 
@@ -81,5 +82,7 @@ struct obj** prologue(struct obj** operand, struct env* env,
 		      int is_fixed_length, int is_strict_typed,
 		      int is_applicative, int propagates_exceptions,
 		      int num_args, obj_type* arg_types); // TODO variable length args
+
+struct obj* proc_operands(struct obj* operand, struct env* env);
 
 #endif

@@ -9,9 +9,10 @@ struct env; // forward declaration
 typedef enum {
   DONE = -1, // returned on EOF
   ERROR = 0,
-  SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION, MACRO,
+  SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, SPCFORM, FUNCTION, MACRO,
   LITERAL, STREAM,
-  THUNK, // used to implement tail recursion
+  THUNK, // used to implement tail recursion (not lazy eval, currently)
+  LIBRARY, // dynamically loaded binary libraries
   EXTENSION, // for extensions
 } obj_type;
 
@@ -28,11 +29,6 @@ struct obj {
 
 struct cell {
   struct obj* first, * rest;
-}; // @heap
-
-struct primitive {
-  struct obj* (*c_func)(struct obj*, struct env*);
-  char* name;
 }; // @heap
 
 struct thunk {

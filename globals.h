@@ -32,4 +32,10 @@ void initialize(void);
 void register_primitive(char* name, struct obj* (*func)(struct obj*,
 							struct env*));
 
+/**
+ * Register a special form to the global namespace.
+ */
+void register_spcform(char* name, struct obj* (*func)(struct obj*,
+						      struct env*));
+
 #endif
