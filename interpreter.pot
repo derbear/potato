@@ -57,7 +57,7 @@
 	   prev-type)
 	 (type-of typed-object))
 	nil)))
-	 
+
 ;; evaluation
 ;; (define make-callable ; abstracted as (bind-symbol . (body)) tagged with
 ;; 		      ; symbol 'callable

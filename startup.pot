@@ -81,7 +81,7 @@
 (define repl
   (func ()
     ;; (format "> " sys-stdout)
-    (print (global-interpreter-evaluate (read)))
+    (print (eval (read)))
     (repl)))
 
 (if (= 1 (length program-arguments))

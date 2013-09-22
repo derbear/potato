@@ -17,6 +17,7 @@ Long-term
 
 Useful
  * better memory management
+  * intern objects
  * better error handling
  * better error abstractions (error type, stack-unwind)
  * better layout of code

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 #include "io.h"
+#include "bin.h"
 #include "data.h"
 #include "builtins.h"
 #include "eval.h"
@@ -58,6 +59,10 @@ void initialize() {
   register_primitive("load", &load);
   register_primitive("set-first", &set_first);
   register_primitive("set-rest", &set_rest);
+
+  register_primitive("bin-load", &bin_load);
+  register_primitive("bin-get", &bin_get);
+  register_primitive("bin-close", &bin_close);
 
   register_primitive("global", &global);
 }
