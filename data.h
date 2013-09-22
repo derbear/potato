@@ -12,6 +12,7 @@ typedef enum {
   SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION, MACRO,
   LITERAL, STREAM,
   THUNK, // used to implement tail recursion
+  LIBRARY, // dynamically loaded binary libraries
   EXTENSION, // for extensions
 } obj_type;
 

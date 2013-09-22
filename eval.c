@@ -123,6 +123,8 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	}
 	return applied;
       }
+    case LIBRARY:
+      return obj;
     case STREAM:
       return obj;
     case NIL:
@@ -202,6 +204,9 @@ void print_obj(struct obj* obj) {
     break;
   case STREAM:
     printf("<DATA-STREAM>");
+    break;
+  case LIBRARY:
+    printf("<BINARY-LIBRARY>");
     break;
   case CELL:
     printf("(");
