@@ -1,42 +1,69 @@
 (load "structures.pot")
 
-;; errors
+;;; errors
 (define make-error
   (func (str)
     (error str)))
 
-;; namespaces
+;;; namespaces
 (define make-namespace
   (func ()
-    (make-small-dict)))
+    (cons nil (make-small-dict))))
+
+(define make-namespace-with-parent
+  (func (parent)
+    (cons parent (make-small-dict))))
+
+(define get-namespace-parent
+  (func (nspace)
+    (first nspace)))
+
+(define get-namespace-dict
+  (func (nspace)
+    (rest nspace)))
+
 (define lookup
   (func (nspace symbol)
     ; (format "lookup: " sys-stdout)
-    (print symbol)
+    ; (print symbol)
     ((func (looked-up)
        (if looked-up
 	   (cons 't looked-up)
-	   (make-error "symbol '' unbound")))
-     (dict-get nspace symbol)))) ; TODO format
+	   (make-error "symbol '' unbound"))) ; TODO format
+     (dict-get (get-namespace-dict nspace) symbol))))
+
 (define soft-bind
   (func (nspace symbol value)
-    (format "soft-bind: " sys-stdout)
-    (print symbol)
+    ; (format "soft-bind: " sys-stdout)
+    ; (print symbol)
     (if (dict-get nspace symbol)
 	(make-error "symbol '' already bound") ; TODO format
-	(dict-put nspace symbol value))))
+	(dict-put (get-namespace-dict nspace) symbol value))))
+
 (define hard-bind
   (func (nspace symbol value)
-    (dict-put nspace symbol value)))
+    (dict-put (get-namespace-dict nspace) symbol value)))
 
-;; types
+(define list-bindings
+  (func (nspace)
+    (define erase-last-nil
+      (func (dict-list)
+	(if (first dict-list)
+	    (cons (first dict-list) (erase-last-nil (rest dict-list)))
+	    nil)))
+    (erase-last-nil (dict-entries (get-namespace-dict nspace)))))
+
+;;; types
 (define object-type-tag 'TYPED-OBJECT)
+
 (define make-type
   (func (typename-symbol)
     typename-symbol))
+
 (define create-typed-object
   (func (object-type object)
     (list object-type-tag object-type object)))
+
 (define type-of
   (func (typed-object)
     (if (= (type typed-object) 'CELL)
@@ -44,11 +71,13 @@
 	    (first (rest typed-object))
 	    nil)
 	nil)))
+
 (define raw-data-of-typed-object
   (func (typed-object)
     (if (type-of typed-object)
 	(first (rest (rest typed-object)))
 	typed-object))) ; if non-typed
+
 (define set-type
   (func (typed-object target-type)
     (if (type-of typed-object)
@@ -58,15 +87,34 @@
 	 (type-of typed-object))
 	nil)))
 
-;; evaluation
-;; (define make-callable ; abstracted as (bind-symbol . (body)) tagged with
-;; 		      ; symbol 'callable
-;;   (func (bind-symbol body) ; on call, arguments are bound to bind-symbol
+;;; evaluation
+
+;; TODO
+;; abstracted as (bind-symbol . primed-function) tagged with symbol 'callable
+;; (define make-callable
+;;   ;; on call, arguments are bound to bind-symbol
+;;   (func (parent-namespace bind-symbol body)
+;;     (define function-call-namespace (make-namespace))
+;;     (hard-bind function-call-namespace bind-symbol operators)
 ;;     (create-typed-object (make-type 'callable) (cons bind-symbol body))))
 
-;; (define call-body
-;;   (func (callable-object)
-;;     (raw-data-of-typed-object callable-object)
+;; ;; (define call-body
+;; ;;   (func (callable-object)
+;; ;;     (raw-data-of-typed-object callable-object)))
+
+;; (define primed-callable
+;;   (func (callable)
+;;     (define bind-symbol (first (raw-data-of-typed-object callable)))
+;;     (define call-body (rest (raw-data-of-typed-object callable)))
+;;     (define call
+;;       (func (body nspace)
+;; 	(if body
+;; 	    ((func ()
+;; 	       (evaluate-under-namespace nspace (first body))
+;; 	       (call (rest body nspace))))
+;; 	    nil)))
+;;     (func (operators namespace)
+;;       (call call-body function-call-namespace))))
 
 (define callable?
   (func (operator)
@@ -78,24 +126,19 @@
   (func (operator)
     (if (= (type-of operator) (make-type 'primitive))
 	(raw-data-of-typed-object operator)
-	nil))) ; TODO return callable body
-;; calls the operators in _this_ namespace
-(define direct-call-operator-object
-  (func (operands)
-    (eval (print operands))))
-(define direct-call-operator (create-typed-object (make-type 'primitive)
-						  direct-call-operator-object))
+	(primed-callable operator)))) ; TODO return callable body
+
 (define apply-operator
-  (func (operator operands)
+  (func (operator operands namespace)
     (if (callable? operator)
-	((raw-callable operator) operands)
+	((raw-callable operator) operands namespace)
 	(format "cannot apply non-callable to operands" sys-stdout))))
 
 (define evaluate-under-namespace
   (func (nspace expr)
     (if (= (type expr) 'CELL)
 	(apply-operator (evaluate-under-namespace nspace (first expr))
-			(rest expr))
+			(rest expr) nspace)
 	(if (= (type expr) 'SYMBOL)
 	    ((func (looked-up)
 	       (if (= (type looked-up) 'ERROR)
@@ -104,10 +147,29 @@
 	     (lookup nspace expr))
 	    expr))))
 
-;; defaults
+;;; defaults
+
+;; calls the operators in _this_ namespace
+(define direct-call-operator-object
+  (func (operands namespace)
+    (eval operands)))
+(define direct-call-operator (create-typed-object (make-type 'primitive)
+						  direct-call-operator-object))
+
+;; returns bindings in this namespace
+(define show-current-name-bindings-operator-object
+  (func (operands namespace)
+    (if operands
+	(format "argument help lookup not yet supported" sys-stdout)
+	(list-bindings namespace))))
+(define show-current-name-bindings-operator
+  (create-typed-object (make-type 'primitive)
+		       show-current-name-bindings-operator-object))
+
 (define populate-default-namespace
   (func (nspace)
     (hard-bind nspace '_ direct-call-operator)
+    (hard-bind nspace '? show-current-name-bindings-operator)
     nspace))
 
 (define make-interpreter

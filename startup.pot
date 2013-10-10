@@ -18,6 +18,16 @@
 	(cons (f (first list)) (map f (rest list)))
 	list))) ; nil
 
+(define list-copy!
+  (func (source-list dest-list)
+    (if (rest source-list)
+	((func ()
+	   (set-first dest-list (first source-list))
+	   (list-copy! (rest source-list) (rest dest-list))))
+	((func ()
+	   (set-first dest-list (first source-list))
+	   (set-rest dest-list (rest source-list)))))))
+
 ;;; Logic and comparators
 
 (define not

@@ -110,6 +110,7 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	if (DEBUG) {
 	  printf("macro expansion: ");
 	  print_obj(applied);
+	  printf("\n");
 	}
 	obj = applied;
 	continue;

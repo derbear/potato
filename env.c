@@ -68,8 +68,9 @@ struct obj* lookup_func(struct env* env, char* name, int recursive) {
   if (recursive && env->parent) {
     return lookup(env->parent, name);
   }
-  if (DEBUG && !recursive) {
+  if (DEBUG) {
     // printf("Looked up: %s", name);
+    return make_error(name);
   }
   return make_error("cannot find symbol");
 }

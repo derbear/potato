@@ -1,9 +1,13 @@
-;; lookups
+(define copy-list
+  (func (list)
+    (if list
+	(cons (first list) (copy-list (rest list)))
+	nil)))
 
 (define make-small-dict ; list of nil-terminated cells
 			; e.g. ((2 . 3) (4 . 5) nil)
   (func ()
-    '(small-dict ())))
+    (copy-list '(small-dict ()))))
 
 (define dict-entries
   (func (dict)
