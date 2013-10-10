@@ -1,4 +1,5 @@
 CFLAGS=-Wall -std=c99 -g -Werror
+LINK_FLAGS=-Wl,-export-dynamic -ldl
 CORE=eval.o io.o util.o globals.o data.o main.o env.o bin.o
 OBJECTS=${CORE} extensions.o
 EXECUTABLE=potato
@@ -12,7 +13,7 @@ test: main
 	./${EXECUTABLE} test.pot
 
 main: ${OBJECTS}
-	cc ${CFLAGS} -o potato ${OBJECTS} -ldl # -ldl for dynamic loading
+	cc ${CFLAGS} -o potato ${OBJECTS} ${LINK_FLAGS}
 
 clean:
 	rm -rf ${OBJECTS} *.gz ${EXECUTABLE}
