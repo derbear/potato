@@ -76,6 +76,7 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
   if (DEBUG) {
     printf("Tried to call object: ");
     print_obj(operator);
+    printf("\n");
   }
   return make_error("cannot call object");
 }
@@ -97,6 +98,7 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	if (DEBUG) {
 	  printf("\nDEBUG: operator error: ");
 	  print_obj(obj->cell->first);
+	  printf("\n");
 	}
 	return operator;
       }
