@@ -81,6 +81,16 @@
 	       (format-recur vector (+ index 1)))))))
     (format-recur vector 0)))
 
+;;; Other utilities
+
+(define let1f
+  (func (bind-pair expr-list)
+    (list (append (list 'func (list (first bind-pair))) expr-list)
+	  (first (rest bind-pair)))))
+
+; bind-pair
+(define let1 (macro let1f))
+
 ;;; Main code
 
 (load "interpreter.pot")
@@ -91,7 +101,7 @@
 (define repl
   (func ()
     ;; (format "> " sys-stdout)
-    (print (eval (read)))
+    (print (global-interpreter-evaluate (read)))
     (repl)))
 
 (if (= 1 (length program-arguments))
