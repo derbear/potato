@@ -22,10 +22,13 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
     struct obj* procedure = func->body;
     struct obj* params = func->params;
     struct env* parent = func->parent;
-    if (list_len(params) != list_len(operand)) {
+
+    if (list_len(params) != list_len(operand) && list_len(params) != -1) {
       if (DEBUG) {
-	printf("\nDEBUG: function called with incorrect number of parameters: ");
+	printf("\nDEBUG: function called with (%d) parameters but declared "
+	       "with (%d) parameters: ", list_len(operand), list_len(params));
 	print_obj(operator);
+	printf("\n");
       }
       return make_error("function called with incorrect number "
 			 "of parameters");
@@ -39,11 +42,15 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
     // set up called function environment
     struct env* call_env;
     call_env = make_env(parent, DEFAULT_FRAME_INITIAL_SIZE);
-    while (params->type != NIL) {
-      struct obj* symbol = params->cell->first;
-      bind(call_env, symbol->string, operand->cell->first);
-      operand = operand->cell->rest;
-      params = params->cell->rest;
+    if (params->type == SYMBOL) {
+      bind(call_env, params->string, operand);
+    } else {
+      while (params->type != NIL) {
+	struct obj* symbol = params->cell->first;
+	bind(call_env, symbol->string, operand->cell->first);
+	operand = operand->cell->rest;
+	params = params->cell->rest;
+      }
     }
 
     // evaluate function body
@@ -389,14 +396,24 @@ struct obj* function(struct obj* operand, struct env* env) {
     return make_error("<FUNCTION> requires at least one "
 		      "valid argument");
   }
-  // TODO must typecheck this first operand
+  // parameter-checking
   struct obj* params = operand->cell->first;
-  while (params->type != NIL) {
-    struct cell* curr = params->cell;
-    if (curr->first->type != SYMBOL) {
+  if (params->type == CELL || params->type == NIL) {
+    while (params->type != NIL) {
+      if (params->type != CELL) {
+	return make_error("<FUNCTION> received malformed argument list");
+      }
+      struct cell* curr = params->cell;
+      if (curr->first->type != SYMBOL) {
 	return make_error("cannot define functions with non-symbols");
+      }
+      params = curr->rest;
     }
-    params = curr->rest;
+  } else if (params->type == SYMBOL) {
+    ; // pass
+  } else {
+    return make_error("first argument to <FUNCTION> must either be a list of "
+		      "arguments or a symbol");
   }
 
   struct function* f = malloc(sizeof(struct function));
