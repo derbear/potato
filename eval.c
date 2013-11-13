@@ -116,7 +116,7 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	env = ((struct thunk*) (applied->data))->env;
 	continue;
       } else if (operator->type == MACRO) {
-	if (DEBUG) {
+	if (DEBUG == 2) {
 	  printf("macro expansion: ");
 	  print_obj(applied);
 	  printf("\n");
