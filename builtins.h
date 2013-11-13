@@ -95,15 +95,13 @@ struct obj* typeof(struct obj* operand, struct env* environment);
 /**
  * Defines an anonymous function.
  *
- * The first argument should be a list of symbols, while the rest of the
- * arguments should be expressions constituting the function body.
+ * The first argument should be a list of parameters or a symbol, while the
+ * rest of the arguments should be expressions constituting the function body.
  *
  * During evaluation, each successive argument is bound to the corresponding
- * symbol in the argument list. Each expression in the function body is then
- * evaluated sequentially, and finally the value of the last expression is
- * returned.
- *
- * Variable-length arguments are not yet supported.
+ * parameter in the argument list, or it is bound to a symbol directly.
+ * Each expression in the function body is then evaluated sequentially, and
+ * finally the value of the last expression is returned.
  */
 struct obj* function(struct obj* operand, struct env* environment);
 
