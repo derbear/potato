@@ -114,6 +114,14 @@
 ;;     (func (operators namespace)
 ;;       (call call-body function-call-namespace))))
 
+; converts a callable-object into a pure, top-level function call
+(define prime-callable
+  (func (callable)
+    (define call
+      (func (arguments namespace))) ;; TODO implement this
+    call))
+
+
 (define callable?
   (func (operator)
     (or (= (type-of operator) (make-type 'callable))
