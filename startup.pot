@@ -18,16 +18,6 @@
 	(cons (f (first list)) (map f (rest list)))
 	list))) ; nil
 
-(define list-copy!
-  (func (source-list dest-list)
-    (if (rest source-list)
-	((func ()
-	   (set-first dest-list (first source-list))
-	   (list-copy! (rest source-list) (rest dest-list))))
-	((func ()
-	   (set-first dest-list (first source-list))
-	   (set-rest dest-list (rest source-list)))))))
-
 ;;; Logic and comparators
 
 (define not
@@ -62,6 +52,37 @@
   (func (a b)
     (or (> a b) (= a b))))
 
+;;; Control flow
+
+;; evaluate a block of expressions and return the value of the last one
+(define do-block
+  (func expressions
+    (if expressions
+	(if (rest expressions)
+	    ((func ()
+	       (eval (first expressions))
+	       (apply do-block (rest expressions))))
+	    (eval (first expressions)))
+	nil))) ; return nil
+
+;; evaluate expressions under once-evaluated local name-bindings
+;; args should look like (<bindings> <expr1> <expr2> ...)
+;; bindings looks something like ((a . 3) (b . 5))
+;; cannot do dependent bindings like ((a . 3) (b . (+ a 2)))
+;;;;;
+;;    Generates:
+;;    ((func param-list expressions) value-list)))
+;;;;;
+(define letf
+  (func args
+    (define bindings (first args))
+    (define param-list (map first bindings))
+    (define value-list (map (func (pair) (rest pair)) bindings))
+    (define expressions (rest args))
+    (cons (cons 'func (cons param-list expressions)) value-list)))
+
+(define let (macro letf))
+
 ;;; I/O
 
 (define format
@@ -81,29 +102,19 @@
 	       (format-recur vector (+ index 1)))))))
     (format-recur vector 0)))
 
-;;; Other utilities
-
-(define let1f
-  (func (bind-pair expr-list)
-    (list (append (list 'func (list (first bind-pair))) expr-list)
-	  (first (rest bind-pair)))))
-
-; bind-pair
-(define let1 (macro let1f))
-
 ;;; Main code
 
 (load "interpreter.pot")
 
-(define global-interpreter-evaluate (make-interpreter))
+(define bootstrap-eval (make-interpreter))
 
 ;; (define repl-closure
 (define repl
-  (func ()
-    ;; (format "> " sys-stdout)
-    (print (global-interpreter-evaluate (read)))
-    (repl)))
+  (func (prompt)
+    (format prompt sys-stdout)
+    (print (bootstrap-eval (read)))
+    (repl prompt)))
 
 (if (= 1 (length program-arguments))
-    (repl)
+    (repl "> ")
     (load (first (rest program-arguments))))

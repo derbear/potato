@@ -6,6 +6,8 @@
     (error str)))
 
 ;;; namespaces
+;;; represented as (<parent>, <dictionary>) where dictionary assigns symbols to values
+
 (define make-namespace
   (func ()
     (cons nil (make-small-dict))))
@@ -26,10 +28,10 @@
   (func (nspace symbol)
     ; (format "lookup: " sys-stdout)
     ; (print symbol)
-    (let1 (looked-up (dict-get (get-namespace-dict nspace) symbol))
-	  ((if looked-up
-	       (cons 't looked-up)
-	       (make-error "symbol '' unbound")))))) ; TODO format
+    (let ((looked-up . (dict-get (get-namespace-dict nspace) symbol)))
+	 (if looked-up
+	     (cons 't looked-up)
+	     (make-error "symbol '' unbound"))))) ; TODO format
 
 (define soft-bind
   (func (nspace symbol value)
@@ -52,92 +54,12 @@
 	    nil)))
     (erase-last-nil (dict-entries (get-namespace-dict nspace)))))
 
-;;; types
-(define object-type-tag 'TYPED-OBJECT)
-
-(define make-type
-  (func (typename-symbol)
-    typename-symbol))
-
-(define create-typed-object
-  (func (object-type object)
-    (list object-type-tag object-type object)))
-
-(define type-of
-  (func (typed-object)
-    (if (= (type typed-object) 'CELL)
-	(if (= (first typed-object) object-type-tag)
-	    (first (rest typed-object))
-	    nil)
-	nil)))
-
-(define data-of
-  (func (typed-object)
-    (if (type-of typed-object)
-	(first (rest (rest typed-object)))
-	typed-object))) ; if non-typed
-
-(define set-type
-  (func (typed-object target-type)
-    (if (type-of typed-object)
-	(let1 (prev-type (type-of typed-object))
-	      ((set-first (rest typed-object) target-type)
-	       prev-type))
-	nil)))
-
 ;;; evaluation
-
-;; TODO
-;; abstracted as (bind-symbol . body) tagged with symbol 'lex-callable
-;; (define make-lexical-callable
-;;   ;; on call, arguments are bound to bind-symbol
-;;   (func (parent-namespace bind-symbol body)
-;;     (define function-call-namespace (make-namespace))
-;;     (hard-bind function-call-namespace bind-symbol operators)
-;;     (create-typed-object (make-type 'lex-callable) (cons bind-symbol body))))
-
-;; ;; (define call-body
-;; ;;   (func (callable-object)
-;; ;;     (data-of callable-object)))
-
-;; (define prime-callable
-;;   (func (callable)
-;;     (define bind-symbol (first (data-of callable)))
-;;     (define call-body (rest (data-of callable)))
-;;     (define call
-;;       (func (body nspace)
-;; 	(if body
-;; 	    ((func ()
-;; 	       (evaluate-under-namespace nspace (first body))
-;; 	       (call (rest body nspace))))
-;; 	    nil)))
-;;     (func (operators namespace)
-;;       (call call-body function-call-namespace))))
-
-; converts a callable-object into a pure, top-level function call
-(define prime-callable
-  (func (callable)
-    (define call
-      (func (arguments namespace))) ;; TODO implement this
-    call))
-
-
-(define callable?
-  (func (operator)
-    (or (= (type-of operator) (make-type 'callable))
-	(= (type-of operator) (make-type 'primitive)))))
-
-;; converts arg into callable form; dispatches on whether primitive or not
-(define raw-callable
-  (func (operator)
-    (if (= (type-of operator) (make-type 'primitive))
-	(data-of operator)
-	(prime-callable operator)))) ; TODO return callable body
 
 (define apply-operator
   (func (operator operands namespace)
-    (if (callable? operator)
-	((raw-callable operator) operands namespace)
+    (if (= (type operator) 'FUNCTION)
+	(operator operands namespace)
 	(format "cannot apply non-callable to operands" sys-stdout))))
 
 (define evaluate-under-namespace
@@ -146,30 +68,25 @@
 	(apply-operator (evaluate-under-namespace nspace (first expr))
 			(rest expr) nspace)
 	(if (= (type expr) 'SYMBOL)
-	    (let1 (looked-up (lookup nspace expr))
-		  ((if (= (type looked-up) 'ERROR)
-		       looked-up
-		       (rest looked-up)))) ; remove the 't in front
+	    (let ((looked-up . (lookup nspace expr)))
+		 (if (= (type looked-up) 'ERROR)
+		     looked-up
+		     (rest looked-up))) ; remove the 't in front
 	    expr))))
 
-;;; defaults
+;; ;;; defaults
 
-;; calls the operators in _this_ namespace
-(define direct-call-operator-raw
+;; ;; calls the operators in _this_ namespace
+(define direct-call-operator
   (func (operands namespace)
     (eval operands)))
-(define direct-call-operator (create-typed-object (make-type 'primitive)
-						  direct-call-operator-raw))
 
 ;; returns bindings in this namespace
-(define show-current-name-bindings-operator-raw
+(define show-current-name-bindings-operator
   (func (operands namespace)
     (if operands
 	(format "argument help lookup not yet supported" sys-stdout)
 	(list-bindings namespace))))
-(define show-current-name-bindings-operator
-  (create-typed-object (make-type 'primitive)
-		       show-current-name-bindings-operator-raw))
 
 (define populate-default-namespace
   (func (nspace)
@@ -177,25 +94,14 @@
     (hard-bind nspace '? show-current-name-bindings-operator)
     nspace))
 
+;; return an interpreter's evaluate function
 (define make-interpreter
   (func ()
     (define global-namespace (populate-default-namespace (make-namespace)))
     (define top-level-evaluate
       (func (expr)
-	(let1 (result (evaluate-under-namespace global-namespace expr))
-	      ((if (= (type result) 'ERROR)
-		   (print result)
-		   result)))))
+	(let ((result . (evaluate-under-namespace global-namespace expr)))
+	     (if (= (type result) 'ERROR)
+		 (print result)
+		 result))))
     top-level-evaluate))
-
-;; (define test-types
-;;   (func ()
-;;     (define almond-type (make-type 'almond))
-;;     (define almond-object (create-typed-object almond-type 3))
-;;     (define coconut-type (make-type 'coconut))
-;;     (print almond-type)
-;;     (print almond-object)
-;;     (print (type-of almond-object))
-;;     (set-type almond-object coconut-type)
-;;     (print almond-object)
-;;     (print (type-of 3))))
