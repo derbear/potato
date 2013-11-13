@@ -1,3 +1,4 @@
+;; shallow copy
 (define copy-list
   (func (list)
     (if list
