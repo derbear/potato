@@ -1,0 +1,2 @@
+(define format-lib (bin-load "./formatting.so" 0))
+(define snprintf (bin-get format-lib "c_snprintf_binding"))
