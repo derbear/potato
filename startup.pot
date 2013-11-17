@@ -1,3 +1,5 @@
+(load "bind-native.pot")
+
 ;;; List utils
 
 (define length
@@ -55,7 +57,7 @@
 ;;; Control flow
 
 ;; evaluate a block of expressions and return the value of the last one
-(define do-block
+(define do-blockf
   (func expressions
     (if expressions
 	(if (rest expressions)
@@ -64,6 +66,8 @@
 	       (apply do-block (rest expressions))))
 	    (eval (first expressions)))
 	nil))) ; return nil
+
+(define do-block (macro do-blockf))
 
 ;; evaluate expressions under once-evaluated local name-bindings
 ;; args should look like (<bindings> <expr1> <expr2> ...)
@@ -113,6 +117,7 @@
   (func (prompt)
     (format prompt sys-stdout)
     (print (bootstrap-eval (read)))
+;    (print (eval (read)))
     (repl prompt)))
 
 (if (= 1 (length program-arguments))
