@@ -145,6 +145,9 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
       return obj;
     default:
       printf("ERROR: BAD OBJECT (EVAL)\n");
+      if (DEBUG) {
+	printf("DEBUG: object type: %d\n", obj->type);
+      }
       return make_error(0);
     }
   }
@@ -230,6 +233,9 @@ void print_obj(struct obj* obj) {
     // fall through
   default:
     printf("ERROR: BAD OBJECT (PRINT)\n");
+    if (DEBUG) {
+      printf("DEBUG: object type: %d\n", obj->type);
+    }
   }
 }
 
