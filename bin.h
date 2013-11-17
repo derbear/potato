@@ -3,7 +3,7 @@
 #include "data.h"
 
 /**
- * Arguments: LITERAL library name, NUMBER lazy (1) or eager (0),
+ * Arguments: LITERAL library name, NUMBER lazy (1) or eager (0)
  * Return: LIBRARY | NIL on failure
  */
 struct obj* bin_load(struct obj* operand, struct env* env);
