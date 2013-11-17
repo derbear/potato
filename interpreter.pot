@@ -26,19 +26,19 @@
 
 (define lookup
   (func (nspace symbol)
-    ; (format "lookup: " sys-stdout)
-    ; (print symbol)
     (let ((looked-up . (dict-get (get-namespace-dict nspace) symbol)))
 	 (if looked-up
 	     (cons 't looked-up)
-	     (make-error "symbol '' unbound"))))) ; TODO format
+	     (if (dict-has (get-namespace-dict nspace) symbol) ; looked up nil
+		 (cons 't nil)
+		 (if (get-namespace-parent nspace)
+		     (lookup (get-namespace-parent nspace) symbol)
+		     (make-error (snprintf "symbol '%s' unbound" 100 symbol))))))))
 
 (define soft-bind
   (func (nspace symbol value)
-    ; (format "soft-bind: " sys-stdout)
-    ; (print symbol)
-    (if (dict-get nspace symbol)
-	(make-error "symbol '' already bound") ; TODO format
+    (if (dict-get (get-namespace-dict nspace) symbol)
+	(make-error (snprintf "symbol '%s' already bound" 100 symbol))
 	(dict-put (get-namespace-dict nspace) symbol value))))
 
 (define hard-bind
@@ -58,9 +58,12 @@
 
 (define apply-operator
   (func (operator operands namespace)
-    (if (= (type operator) 'FUNCTION)
+    (if (= (type operator) 'FUNCTION) ; i.e. black box
 	(operator operands namespace)
-	(format "cannot apply non-callable to operands" sys-stdout))))
+	(format "cannot apply non-function to operands" sys-stdout))))
+	;; (if (= (type operator) 'CELL) ; defined at bootstrapped level
+	;;     (apply-proc operator operands namespace)
+	;;     (format "cannot apply non-callable to operands" sys-stdout)))))
 
 (define evaluate-under-namespace
   (func (nspace expr)
@@ -74,12 +77,12 @@
 		     (rest looked-up))) ; remove the 't in front
 	    expr))))
 
-;; ;;; defaults
+;;; defaults
 
-;; ;; calls the operators in _this_ namespace
+;; calls the first argument under _this_ namespace
 (define direct-call-operator
   (func (operands namespace)
-    (eval operands)))
+    (eval (first operands))))
 
 ;; returns bindings in this namespace
 (define show-current-name-bindings-operator

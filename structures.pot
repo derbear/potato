@@ -25,6 +25,17 @@
 	    nil)))
     (get (dict-entries dict) key)))
 
+(define dict-has
+  (func (dict key)
+    (define has
+      (func (entries key)
+	(if (first entries)
+	    (if (= (first (first entries)) key)
+		't
+		(has (rest entries) key))
+	    nil)))
+    (has (dict-entries dict) key)))
+
 (define dict-put
   (func (dict key value)
     (define put
