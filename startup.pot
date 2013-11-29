@@ -2,11 +2,26 @@
 
 ;;; List utils
 
+;; return -1 * number of cells if not nil-terminated e.g. (1 2 3 . 4) returns -4
+;; return nil if malformed
 (define length
   (func (list)
+    (define length-helper
+      (func (remaining count)
+	(if remaining
+	    (if (= (type remaining) 'CELL)
+		(length-helper (rest remaining) (+ 1 count))
+		(* -1 (+ 1 count)))
+	    count)))
+    (length-helper list 0)))
+
+(define last
+  (func (list)
     (if list
-	(+ 1 (length (rest list)))
-	0)))
+	(if (rest list)
+	    (last (rest list))
+	    (first list))
+	list))) ; nil
 
 (define append
   (func (l1 l2)
