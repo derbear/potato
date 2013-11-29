@@ -33,12 +33,12 @@
 		 (cons 't nil)
 		 (if (get-namespace-parent nspace)
 		     (lookup (get-namespace-parent nspace) symbol)
-		     (make-error (snprintf "symbol '%s' unbound" 100 symbol))))))))
+		     (make-error (snprintf "POTATO: symbol '%s' unbound" 100 symbol))))))))
 
 (define soft-bind
   (func (nspace symbol value)
     (if (dict-get (get-namespace-dict nspace) symbol)
-	(make-error (snprintf "symbol '%s' already bound" 100 symbol))
+	(make-error (snprintf "POTATO: symbol '%s' already bound" 100 symbol))
 	(dict-put (get-namespace-dict nspace) symbol value))))
 
 (define hard-bind
@@ -53,6 +53,79 @@
 	    (cons (first dict-list) (erase-last-nil (rest dict-list)))
 	    nil)))
     (erase-last-nil (dict-entries (get-namespace-dict nspace)))))
+
+;;; subroutines, callables, etc.
+
+;; just a block of expressions to be evaluated under scope of _lexical_ parent
+;; <operands> is a list of expressions
+;; returns result of last expression
+;; NOTE: passed arguments and environment at call do NOT affect execution of a
+;; subroutine
+(define make-subroutine
+  (func (operands namespace)
+    (define call
+      (func (args call-namespace) ; TODO not properly tail-recursive
+	(last (map (func (expr) (evaluate-under-namespace namespace expr))
+	     operands))))
+    call))
+
+;; called by make-function and make-macro
+;; originally part of make-function: abstracted out so that make-macro can
+;; choose not to pre-evaluate arguments
+(define procedure-factory
+  (func (pre-evaluate? operands decl-namespace)
+
+    (define check-arglen
+      (func (args param-count)
+	(define arg-count (length args))
+	(or (= param-count arg-count) (= (* -1 param-count) arg-count))))
+
+    (define init-function-frame
+      (func (params args function-frame call-namespace)
+	(if params
+	    (if (= (type params) 'SYMBOL)
+		(soft-bind function-frame params args)
+		(let ()
+		     (soft-bind function-frame (first params)
+				(if pre-evaluate?
+				    (evaluate-under-namespace call-namespace (first args))
+				    (first args)))
+		     (init-function-frame (rest params) (rest args) function-frame call-namespace)))
+	    nil)))
+
+    (define call
+      (func (args call-namespace)
+	(define params (first operands))
+	(define body (rest operands))
+	(define num-params (length params))
+	(define function-frame (make-namespace-with-parent decl-namespace))
+
+	(if (check-arglen args num-params)
+	    (let ()
+		 (init-function-frame params args function-frame call-namespace)
+		 ((make-subroutine body function-frame) 0 0)) ; pass 0 because args don't matter
+	    (make-error (snprintf "POTATO: function called with %d arguments but created with %d parameters" 100 (length args) num-params)))))
+
+    (if (not (> (length operands) 0))
+	(make-error "POTATO: must provide argument list to create function")
+	call)))
+
+;; declare a variable-length parameter list function with lexical scoping
+;; first of <operands> is argument list e.g. (x y . z)
+;; rest of <operands> is function body
+(define make-function
+  (func (operands namespace)
+    (procedure-factory 'yes operands namespace)))
+
+;; make-function, without prior evaluation of arguments and with
+;; evaluation of generated code
+(define make-macro
+  (func (operands namespace)
+    (define code-generator (procedure-factory nil operands namespace))
+    (define call
+      (func (args call-namespace)
+	(evaluate-under-namespace call-namespace (code-generator args call-namespace))))
+    call))
 
 ;;; evaluation
 
@@ -80,6 +153,7 @@
 ;;; defaults
 
 ;; calls the first argument under _this_ namespace
+;; essentially leaks calls to this eval (implemented in C)
 (define direct-call-operator
   (func (operands namespace)
     (eval (first operands))))
@@ -95,6 +169,10 @@
   (func (nspace)
     (hard-bind nspace '_ direct-call-operator)
     (hard-bind nspace '? show-current-name-bindings-operator)
+    (hard-bind nspace 'subroutine make-subroutine)
+    (hard-bind nspace 'func make-function)
+    (hard-bind nspace 'function make-function)
+    (hard-bind nspace 'macro make-macro)
     nspace))
 
 ;; return an interpreter's evaluate function
