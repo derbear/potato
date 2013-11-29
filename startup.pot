@@ -56,19 +56,6 @@
 
 ;;; Control flow
 
-;; evaluate a block of expressions and return the value of the last one
-(define do-blockf
-  (func expressions
-    (if expressions
-	(if (rest expressions)
-	    ((func ()
-	       (eval (first expressions))
-	       (apply do-block (rest expressions))))
-	    (eval (first expressions)))
-	nil))) ; return nil
-
-(define do-block (macro do-blockf))
-
 ;; evaluate expressions under once-evaluated local name-bindings
 ;; args should look like (<bindings> <expr1> <expr2> ...)
 ;; bindings looks something like ((a . 3) (b . 5))
