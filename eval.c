@@ -75,8 +75,7 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
       return evaluate(procedure->cell->first, call_env);
     }
   } else if (operator->type == PRIMITIVE) {
-    struct primitive* wrapper = operator->data;
-    struct obj* (*raw_func)(struct obj*, struct env*) = wrapper->c_func;
+    struct obj* (*raw_func)(struct obj*, struct env*) = operator->data;
     return (*raw_func) (operand, env);
   }
 

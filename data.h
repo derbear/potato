@@ -31,11 +31,6 @@ struct cell {
   struct obj* first, * rest;
 }; // @heap
 
-struct primitive {
-  struct obj* (*c_func)(struct obj*, struct env*);
-  char* name;
-}; // @heap
-
 struct thunk {
   struct env* env;
   struct obj* obj;
