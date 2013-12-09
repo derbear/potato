@@ -206,19 +206,19 @@ void print_obj(struct obj* obj) {
     printf("nil");
     break;
   case PRIMITIVE:
-    printf("<PRIMITIVE-OPERATOR>");
+    printf("<PRIMITIVE-OPERATOR@%p>", obj->data);
     break;
   case FUNCTION:
-    printf("<USER-DEFINED-FUNCTION>");
+    printf("<USER-DEFINED-FUNCTION@%p>", obj->data);
     break;
   case MACRO:
-    printf("<USER-DEFINED-MACRO>");
+    printf("<USER-DEFINED-MACRO@%p>", obj->data);
     break;
   case STREAM:
-    printf("<DATA-STREAM>");
+    printf("<DATA-STREAM@%p>", obj->data);
     break;
   case LIBRARY:
-    printf("<BINARY-LIBRARY>");
+    printf("<BINARY-LIBRARY@%p>", obj->data);
     break;
   case CELL:
     printf("(");
