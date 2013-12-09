@@ -17,10 +17,7 @@ struct env* global_env;
 
 void register_primitive(char* name, struct obj* (*func)(struct obj*,
 							struct env*)) {
-  struct primitive* wrapped = malloc(sizeof(struct primitive));
-  wrapped->c_func = func;
-  wrapped->name = name;
-  bind(global_env, name, make_object(PRIMITIVE, wrapped));
+  bind(global_env, name, make_object(PRIMITIVE, func));
 }
 
 /* TODO this is a stopgap to allow testing - remove later */

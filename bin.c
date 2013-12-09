@@ -56,10 +56,7 @@ struct obj* bin_get(struct obj* operand, struct env* env) {
   }
   void* primitive = dlsym(wrapped->ref, processed[1]->string);
   if (primitive) {
-    struct primitive* wrapper = malloc(sizeof(struct primitive));
-    wrapper->c_func = primitive;
-    wrapper->name = processed[1]->string;
-    return make_object(PRIMITIVE, wrapper);
+    return make_object(PRIMITIVE, primitive);
   } else {
     return make_object(NIL, 0);
   }
