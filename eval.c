@@ -172,68 +172,87 @@ struct obj* evaluate(struct obj* obj, struct env* env) {
   return obj;
 }
 
-void print_list(struct obj* object) {
+int snprint_list(struct obj* object, char* result, int limit) {
   if (object->type == NIL) {
-    printf(")");
+    return snprintf(result, limit, ")");
   } else if (object->cell->rest->type != CELL &&
 	     object->cell->rest->type != NIL) {
-    print_obj(object->cell->first);
-    printf(" . ");
-    print_obj(object->cell->rest);
-    printf(")");
+    int printed = snprint_obj(object->cell->first, result, limit);
+    printed += snprintf(result + printed, limit - printed, " . ");
+    printed += snprint_obj(object->cell->rest, result + printed, limit - printed);
+    printed += snprintf(result + printed, limit - printed, ")");
+    return printed;
   } else {
-    print_obj(object->cell->first);
+    int printed = snprint_obj(object->cell->first, result, limit);
     object = object->cell->rest;
     if (object->type != NIL) {
-      printf(" ");
+      printed += snprintf(result + printed, limit - printed, " ");
     }
-    print_list(object);
+    printed += snprint_list(object, result + printed, limit - printed);
+    return printed;
   }
 }
 
 void print_obj(struct obj* obj) {
+  #define OBJ_PRINT_BUFFER_LIMIT 1000
+  static char OBJ_PRINT_BUFFER[OBJ_PRINT_BUFFER_LIMIT]; // TODO make elastic and efficient
+
+  int length = snprint_obj(obj, OBJ_PRINT_BUFFER, OBJ_PRINT_BUFFER_LIMIT);
+  if (length >= OBJ_PRINT_BUFFER_LIMIT) {
+    printf("ERROR: OBJECT TO BE PRINTED TOO LARGE\n");
+    exit(1);
+  }
+  printf("%s", OBJ_PRINT_BUFFER);
+  // printf("%d: %s", length, OBJ_PRINT_BUFFER);
+}
+
+int snprint_obj(struct obj* obj, char* result, int limit) {
+  if (limit <= 0) {
+    printf("ERROR: OUT OF PRINT SPACE\n");
+    exit(1);
+    return -1;
+  } else if (limit == 1) { // write null-term
+    result[0] = 0;
+    return 0;
+  }
+
   switch(obj->type) {
   case NUMBER:
-    printf("%d", obj->number);
-    break;
+    return snprintf(result, limit, "%d", obj->number);
   case SYMBOL:
-    printf("%s", (char*) obj->data);
-    break;
+    return snprintf(result, limit, "%s", (char*) obj->data);
   case LITERAL:
-    printf("\"%s\"", (char*) obj->data);
-    break;
+    return snprintf(result, limit, "\"%s\"", (char*) obj->data);
   case NIL:
-    printf("nil");
-    break;
+    return snprintf(result, limit, "nil");
   case PRIMITIVE:
-    printf("<PRIMITIVE-OPERATOR@%p>", obj->data);
-    break;
+    return snprintf(result, limit, "<PRIMITIVE-OPERATOR@%p>", obj->data);
   case FUNCTION:
-    printf("<USER-DEFINED-FUNCTION@%p>", obj->data);
-    break;
+    return snprintf(result, limit, "<USER-DEFINED-FUNCTION@%p>", obj->data);
   case MACRO:
-    printf("<USER-DEFINED-MACRO@%p>", obj->data);
-    break;
+    return snprintf(result, limit, "<USER-DEFINED-MACRO@%p>", obj->data);
   case STREAM:
-    printf("<DATA-STREAM@%p>", obj->data);
-    break;
+    return snprintf(result, limit, "<DATA-STREAM@%p>", obj->data);
   case LIBRARY:
-    printf("<BINARY-LIBRARY@%p>", obj->data);
-    break;
+    return snprintf(result, limit, "<BINARY-LIBRARY@%p>", obj->data);
   case CELL:
-    printf("(");
-    print_list(obj);
-    break;
+    if (snprintf(result, limit, "(") != 1) { // '(' and '\0' should be printed
+      printf("ERROR: OUT OF PRINT SPACE\n");
+      exit(1);
+      return -1;
+    } else { // return '(' and printed list
+      return 1 + snprint_list(obj, result + 1, limit - 1);
+    }
   case ERROR:
     if (obj->data) {
-      printf("ERROR: %s", (char*) obj->data);
-      break;
+      return snprintf(result, limit, "ERROR: %s", (char*) obj->data);
     }
-    // fall through
+    // else fall through
   default:
-    printf("ERROR: BAD OBJECT (PRINT)\n");
     if (DEBUG) {
-      printf("DEBUG: object type: %d\n", obj->type);
+      return snprintf(result, limit, "ERROR: BAD OBJECT (PRINT)\nDEBUG: object type: %d\n", obj->type);
+    } else {
+      return snprintf(result, limit, "ERROR: BAD OBJECT (PRINT)\n");
     }
   }
 }
