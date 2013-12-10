@@ -22,5 +22,13 @@ struct obj* evaluate(struct obj* obj, struct env*);
  */
 void print_obj(struct obj* obj);
 
+/**
+ * Prints an object to _result_, returning length of string printed.
+ *
+ * _limit_ should be maximum length to write to what is pointed at by
+ * _result_. (will always terminate with null-term character)
+ */
+int snprint_obj(struct obj* obj, char* result, int limit);
+
 
 #endif
