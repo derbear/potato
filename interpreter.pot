@@ -78,7 +78,8 @@
     (define check-arglen
       (func (args param-count)
 	(define arg-count (length args))
-	(or (= param-count arg-count) (= (* -1 param-count) arg-count))))
+	(or (= param-count arg-count)
+	    (<= (- (* -1 param-count) 1) arg-count))))
 
     (define init-function-frame
       (func (params args function-frame call-namespace)
