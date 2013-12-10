@@ -7,13 +7,14 @@ POTATO is (almost) a Scheme interpreter written in C for fun and learning in my 
 `./potato [filename]' to execute a file
 
 Horizon
- * proper formatted print
- * dynamic linking from top-level
+ * second-level POTATO
+ * debugger for second+ levels of POTATO
+ * reflexive interpreter (second->first level)
+ * garbage-collected bytecode interpreter
+ * compiler for second level
 
 Long-term
  * support for floating-point
- * a working garbage collector
- * a compiler, optimizations
 
 Useful
  * better memory management
