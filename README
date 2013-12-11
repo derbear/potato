@@ -13,6 +13,9 @@ POTATO is (almost) a Scheme interpreter written in C for fun and learning in my 
 `./potato' to run
 `./potato [filename]' to execute a file
 
+Details
+ * assertions
+
 Horizon
  * second-level POTATO
  * debugger for second+ levels of POTATO
