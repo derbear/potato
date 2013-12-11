@@ -257,6 +257,20 @@ int snprint_obj(struct obj* obj, char* result, int limit) {
   }
 }
 
+#if DEBUG
+char* debug_obj_contents(struct obj* obj) {
+  #define DEBUG_OBJ_PRINT_BUFFER_LIMIT 1000
+  static char OBJ_PRINT_BUFFER[DEBUG_OBJ_PRINT_BUFFER_LIMIT]; // TODO make elastic and efficient
+
+  int length = snprint_obj(obj, OBJ_PRINT_BUFFER, DEBUG_OBJ_PRINT_BUFFER_LIMIT);
+  if (length >= DEBUG_OBJ_PRINT_BUFFER_LIMIT) {
+    printf("ERROR: OBJECT TO BE PRINTED TOO LARGE\n");
+    exit(1);
+  }
+  return OBJ_PRINT_BUFFER;
+}
+#endif
+
 // ********** Derek Leung
 // ********** Built-in primitive operators
 
