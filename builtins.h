@@ -39,6 +39,11 @@ struct obj* mul(struct obj* operand, struct env* environment);
 struct obj* floor_div(struct obj* operand, struct env* environment);
 
 /**
+ * Modulus operator.
+ */
+struct obj* mod(struct obj* operand, struct env* environment);
+
+/**
  * Returns the first number if it is equal to the rest; otherwise returns NIL.
  */
 struct obj* equals(struct obj* operand, struct env* environment);

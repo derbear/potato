@@ -36,6 +36,7 @@ void initialize() {
   register_primitive("-", &sub);
   register_primitive("*", &mul);
   register_primitive("//", &floor_div);
+  register_primitive("%", &mod);
   register_primitive("=", &equals);
   register_primitive("<", &lessthan);
   register_primitive("quote", &quote);

@@ -303,6 +303,19 @@ struct obj* floor_div(struct obj* operand, struct env* env) {
   return make_small_object(NUMBER, result);
 }
 
+struct obj* mod(struct obj* operand, struct env* env) {
+  obj_type types[] = {NUMBER, NUMBER};
+  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
+  if (!processed) {
+    return operand;
+  }
+  if (processed[1]->number == 0) {
+    return make_error("mod by zero undefined");
+  }
+  int result = processed[0]->number % processed[1]->number;
+  return make_small_object(NUMBER, result);
+}
+
 struct obj* equals(struct obj* operand, struct env* env) { // TODO generalize
   obj_type types[] = {NIL, NIL};
   struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
