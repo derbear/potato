@@ -56,7 +56,8 @@ struct obj* unflatten(struct obj** array, int size);
 /**
  * Returns the length of its given argument.
  *
- * If its given argument is not a well-formed list, then this returns -1.
+ * If its given argument is not a well-formed list or is of the wrong
+ * data type, then this returns -1.
  */
 int list_len(struct obj* obj);
 
