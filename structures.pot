@@ -18,39 +18,32 @@
   (func (dict key)
     (define get
       (func (entries key)
-	(if (first entries)
-	    (if (= (first (first entries)) key)
-		(rest (first entries))
-		(get (rest entries) key))
-	    nil)))
+	(cond ((not (first entries)) nil)
+	      ((= (first (first entries)) key) (rest (first entries)))
+	      (else (get (rest entries) key)))))
     (get (dict-entries dict) key)))
 
 (define dict-has
   (func (dict key)
     (define has
       (func (entries key)
-	(if (first entries)
-	    (if (= (first (first entries)) key)
-		't
-		(has (rest entries) key))
-	    nil)))
+	(cond ((not (first entries)) nil)
+	      ((= (first (first entries)) key) 't)
+	      (else (has (rest entries) key)))))
     (has (dict-entries dict) key)))
 
 (define dict-put
   (func (dict key value)
     (define put
       (func (entries key value)
-	(if (first entries)
-	    (if (= (first (first entries)) key)
-		;; return replaced value but make sure it's set
-		((func (x)
-		   (set-rest (first entries) value)
-		   x)
-		 (rest (first entries)))
-		(put (rest entries) key value))
-	    ((func ()
-	       (set-first entries (cons key value))
-	       (set-rest entries (list nil)))))))
+	(cond ((not (first entries))
+	       (let ()
+		    (set-first entries (cons key value))
+		    (set-rest entries (list nil))))
+	      ((not (= (first (first entries)) key)) (put (rest entries) key value))
+	      (else (let ((x . (rest (first entries))))
+			 (set-rest (first entries) value)
+			 x)))))
     (put (dict-entries dict) key value)))
 
 (define structures-internal-test

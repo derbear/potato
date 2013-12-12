@@ -69,6 +69,31 @@
   (func (a b)
     (or (> a b) (= a b))))
 
+;; (cond (<cond1> <expr1>)
+;;       (<cond2> <expr2>)
+;;       ...
+;;       (<condn> <exprn>)
+;;       (else <expr'>))
+;; if else clause is missing, then implicit (else nil)
+;; generates equivalent chained if-expression
+(define condf
+  (func switch-list
+    (define cook-cond-statement
+      (func (conditional consequence alternative)
+	(list 'if conditional consequence alternative)))
+    (define condf-helper
+      (func (switch-list)
+	(if (rest switch-list)
+	    (cook-cond-statement (first (first switch-list))
+				 (second (first switch-list))
+				 (condf-helper (rest switch-list)))
+	    (if (= (first (first switch-list)) 'else) ; (cond (else <expr>))
+		(second (first switch-list))
+		nil))))
+    (condf-helper switch-list)))
+
+(define cond (macro condf))
+
 ;;; Control flow
 
 ;; evaluate expressions under once-evaluated local name-bindings
