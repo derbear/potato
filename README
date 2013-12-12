@@ -13,11 +13,13 @@ Horizon
  * second-level POTATO
  * debugger for second+ levels of POTATO
  * reflexive interpreter (second->first level)
- * garbage-collected bytecode interpreter
+ * modes of operation (see below)
+   * garbage-collected bytecode interpreter
  * compiler for second level
 
 Long-term
  * support for floating-point
+ * module system for libraries
 
 Useful
  * better memory management
@@ -28,3 +30,21 @@ Useful
  * documentation
  * tests
  * errors print themselves?
+
+POTATO modes of operation:
+ 1. Diced: Debug - for development
+  a. (default) - standard debugging utilities, tracebacks, assertions
+  b. Minced: trace - expression-by-expression execution
+ 2. Baked: Fast interpreted - for rapid update/deployment, most applications
+  - removal of assertions, most debugging information
+  - higher-level constructs and introspection still supported
+  - modifiable runtime
+ 3. Mashed: JIT compiled - for speed-sensitive, fast apps
+  - runs on bytecode interpreter
+  - higher-level constructs will be transformed at compile-time to lower-level
+  - only lower-level constructs can be introduced at runtime
+    - must call to interpreter to run higher-level constructs
+  - embeddable within interpreter
+ 4. Full compiled - most likely unnecessary
+
+(1) planned to be strong-typed
