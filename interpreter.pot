@@ -5,54 +5,56 @@
   (func (str)
     (error str)))
 
-;;; namespaces
+;;; callframes
 ;;; represented as (<parent>, <dictionary>) where dictionary assigns symbols to values
 
-(define make-namespace
+(define make-callframe
   (func ()
     (cons nil (make-small-dict))))
 
-(define make-namespace-with-parent
+(define empty-callframe (make-callframe)) ; constant
+
+(define make-callframe-with-parent
   (func (parent)
     (cons parent (make-small-dict))))
 
-(define get-namespace-parent
-  (func (nspace)
-    (first nspace)))
+(define get-callframe-parent
+  (func (frame)
+    (first frame)))
 
-(define get-namespace-dict
-  (func (nspace)
-    (rest nspace)))
+(define get-callframe-dict
+  (func (frame)
+    (rest frame)))
 
 (define lookup
-  (func (nspace symbol)
-    (let ((looked-up . (dict-get (get-namespace-dict nspace) symbol)))
+  (func (frame symbol)
+    (let ((looked-up . (dict-get (get-callframe-dict frame) symbol)))
 	 (if looked-up
 	     (cons 't looked-up)
-	     (if (dict-has (get-namespace-dict nspace) symbol) ; looked up nil
+	     (if (dict-has (get-callframe-dict frame) symbol) ; looked up nil
 		 (cons 't nil)
-		 (if (get-namespace-parent nspace)
-		     (lookup (get-namespace-parent nspace) symbol)
+		 (if (get-callframe-parent frame)
+		     (lookup (get-callframe-parent frame) symbol)
 		     (make-error (snprintf "POTATO: symbol '%s' unbound" 100 symbol))))))))
 
 (define soft-bind
-  (func (nspace symbol value)
-    (if (dict-get (get-namespace-dict nspace) symbol)
+  (func (frame symbol value)
+    (if (dict-get (get-callframe-dict frame) symbol)
 	(make-error (snprintf "POTATO: symbol '%s' already bound" 100 symbol))
-	(dict-put (get-namespace-dict nspace) symbol value))))
+	(dict-put (get-callframe-dict frame) symbol value))))
 
 (define hard-bind
-  (func (nspace symbol value)
-    (dict-put (get-namespace-dict nspace) symbol value)))
+  (func (frame symbol value)
+    (dict-put (get-callframe-dict frame) symbol value)))
 
 (define list-bindings
-  (func (nspace)
+  (func (frame)
     (define erase-last-nil
       (func (dict-list)
 	(if (first dict-list)
 	    (cons (first dict-list) (erase-last-nil (rest dict-list)))
 	    nil)))
-    (erase-last-nil (dict-entries (get-namespace-dict nspace)))))
+    (erase-last-nil (dict-entries (get-callframe-dict frame)))))
 
 ;;; subroutines, callables, etc.
 
@@ -62,10 +64,10 @@
 ;; NOTE: passed arguments and environment at call do NOT affect execution of a
 ;; subroutine
 (define make-subroutine
-  (func (operands namespace)
+  (func (operands callframe)
     (define call
-      (func (args call-namespace) ; TODO not properly tail-recursive
-	(last (map (func (expr) (evaluate-under-namespace namespace expr))
+      (func (args call-callframe) ; TODO not properly tail-recursive
+	(last (map (func (expr) (evaluate-under-callframe callframe expr))
 	     operands))))
     call))
 
@@ -73,7 +75,7 @@
 ;; originally part of make-function: abstracted out so that make-macro can
 ;; choose not to pre-evaluate arguments
 (define procedure-factory
-  (func (pre-evaluate? operands decl-namespace)
+  (func (pre-evaluate? operands decl-callframe)
 
     (define check-arglen
       (func (args param-count)
@@ -82,28 +84,32 @@
 	    (<= (- (* -1 param-count) 1) arg-count))))
 
     (define init-function-frame
-      (func (params args function-frame call-namespace)
+      (func (params args function-frame call-callframe)
 	(if params
 	    (if (= (type params) 'SYMBOL)
-		(soft-bind function-frame params args)
+		(if pre-evaluate?
+		    (soft-bind function-frame params (map
+						      (func (x) (evaluate-under-callframe call-callframe x))
+						      args))
+		    (soft-bind function-frame params args))
 		(let ()
 		     (soft-bind function-frame (first params)
 				(if pre-evaluate?
-				    (evaluate-under-namespace call-namespace (first args))
+				    (evaluate-under-callframe call-callframe (first args))
 				    (first args)))
-		     (init-function-frame (rest params) (rest args) function-frame call-namespace)))
+		     (init-function-frame (rest params) (rest args) function-frame call-callframe)))
 	    nil)))
 
     (define call
-      (func (args call-namespace)
+      (func (args call-callframe)
 	(define params (first operands))
 	(define body (rest operands))
 	(define num-params (length params))
-	(define function-frame (make-namespace-with-parent decl-namespace))
+	(define function-frame (make-callframe-with-parent decl-callframe))
 
 	(if (check-arglen args num-params)
 	    (let ()
-		 (init-function-frame params args function-frame call-namespace)
+		 (init-function-frame params args function-frame call-callframe)
 		 ((make-subroutine body function-frame) 0 0)) ; pass 0 because args don't matter
 	    (make-error (snprintf "POTATO: function called with %d arguments but created with %d parameters" 100 (length args) num-params)))))
 
@@ -112,40 +118,37 @@
 	call)))
 
 ;; declare a variable-length parameter list function with lexical scoping
-;; first of <operands> is argument list e.g. (x y . z)
-;; rest of <operands> is function body
+;; first of <args+body> is argument list e.g. (x y . z)
+;; rest of <args+body> is function body
 (define make-function
-  (func (operands namespace)
-    (procedure-factory 'yes operands namespace)))
+  (func (args+body declared-callframe)
+    (procedure-factory 'yes args+body declared-callframe)))
 
 ;; make-function, without prior evaluation of arguments and with
 ;; evaluation of generated code
 (define make-macro
-  (func (operands namespace)
-    (define code-generator (procedure-factory nil operands namespace))
+  (func (operands callframe)
+    (define code-generator (procedure-factory nil operands callframe))
     (define call
-      (func (args call-namespace)
-	(evaluate-under-namespace call-namespace (code-generator args call-namespace))))
+      (func (args call-callframe)
+	(evaluate-under-callframe call-callframe (code-generator args call-callframe))))
     call))
 
 ;;; evaluation
 
 (define apply-operator
-  (func (operator operands namespace)
-    (if (= (type operator) 'FUNCTION) ; i.e. black box
-	(operator operands namespace)
+  (func (operator operands callframe)
+    (if (= (type operator) 'FUNCTION)
+	(operator operands callframe)
 	(format "cannot apply non-function to operands" sys-stdout))))
-	;; (if (= (type operator) 'CELL) ; defined at bootstrapped level
-	;;     (apply-proc operator operands namespace)
-	;;     (format "cannot apply non-callable to operands" sys-stdout)))))
 
-(define evaluate-under-namespace
-  (func (nspace expr)
+(define evaluate-under-callframe
+  (func (frame expr)
     (if (= (type expr) 'CELL)
-	(apply-operator (evaluate-under-namespace nspace (first expr))
-			(rest expr) nspace)
+	(apply-operator (evaluate-under-callframe frame (first expr))
+			(rest expr) frame)
 	(if (= (type expr) 'SYMBOL)
-	    (let ((looked-up . (lookup nspace expr)))
+	    (let ((looked-up . (lookup frame expr)))
 		 (if (= (type looked-up) 'ERROR)
 		     looked-up
 		     (rest looked-up))) ; remove the 't in front
@@ -159,9 +162,9 @@
   (func (operands namespace)
     (eval (first operands))))
 
-;; returns bindings in this namespace
+;; returns bindings in this callframe
 (define show-current-name-bindings-operator
-  (func (operands namespace)
+  (func (operands callframe)
     (if operands
 	(format "argument help lookup not yet supported" sys-stdout)
 	(list-bindings namespace))))
@@ -179,10 +182,10 @@
 ;; return an interpreter's evaluate function
 (define make-interpreter
   (func ()
-    (define global-namespace (populate-default-namespace (make-namespace)))
+    (define global-callframe (populate-default-callframe (make-callframe)))
     (define top-level-evaluate
       (func (expr)
-	(let ((result . (evaluate-under-namespace global-namespace expr)))
+	(let ((result . (evaluate-under-callframe global-callframe expr)))
 	     (if (= (type result) 'ERROR)
 		 (print result)
 		 result))))
