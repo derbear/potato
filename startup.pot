@@ -4,6 +4,9 @@
 
 ;; return -1 * number of cells if not nil-terminated e.g. (1 2 3 . 4) returns -4
 ;; return nil if malformed
+
+(define list (func a a))
+
 (define length
   (func (list)
     (define length-helper
