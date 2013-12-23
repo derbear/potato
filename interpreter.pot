@@ -156,28 +156,69 @@
 
 ;;; defaults
 
-;; calls the first argument under _this_ namespace
-;; essentially leaks calls to this eval (implemented in C)
-(define direct-call-operator
-  (func (operands namespace)
-    (eval (first operands))))
+;; quote
+(define quote-operator
+  (func (operands callframe)
+    (if (not (= (length operands) 1))
+	(make-error "quote requires exactly 1 argument")
+	(first operands))))
 
 ;; returns bindings in this callframe
 (define show-current-name-bindings-operator
   (func (operands callframe)
     (if operands
 	(format "argument help lookup not yet supported" sys-stdout)
-	(list-bindings namespace))))
+	(list-bindings callframe))))
 
-(define populate-default-namespace
-  (func (nspace)
-    (hard-bind nspace '_ direct-call-operator)
-    (hard-bind nspace '? show-current-name-bindings-operator)
-    (hard-bind nspace 'subroutine make-subroutine)
-    (hard-bind nspace 'func make-function)
-    (hard-bind nspace 'function make-function)
-    (hard-bind nspace 'macro make-macro)
-    nspace))
+;; bind first argument to evaluation of second
+(define soft-bind-name-operator
+  (func (operands callframe)
+    (if (not (= (length operands) 2))
+	(make-error "ERROR: usage is '(: <NAME> <EXPR>)'")
+	(let ()
+	     (soft-bind callframe (first operands) (evaluate-under-callframe callframe (first (rest operands))))
+	     (first operands)))))
+
+;; (func args args) i.e. evaluate all arguments and make into a list
+(define list-function (make-function '(args args) empty-callframe))
+
+(define wrap-primitive-in-function
+  (func (primitive)
+    (define wrapped-primitive
+      (func (operands callframe)
+	(define arglist (apply-operator list-function operands callframe))
+	;; quote each arg to prevent double evaluation
+	;; did not use apply because it will double-evaluate
+	(eval (cons 'primitive (map (func (arg) (list 'quote arg)) arglist)))))
+    wrapped-primitive))
+
+(define populate-default-callframe
+  (func (frame)
+    (hard-bind frame 'quote quote-operator)
+    (hard-bind frame 'subroutine make-subroutine)
+    (hard-bind frame 'func make-function)
+    (hard-bind frame 'function make-function)
+    (hard-bind frame 'macro make-macro)
+    (hard-bind frame ': soft-bind-name-operator)
+    (hard-bind frame 'list list-function)
+
+    (hard-bind frame '_+ (wrap-primitive-in-function +))
+    (hard-bind frame '_- (wrap-primitive-in-function -))
+    (hard-bind frame '_* (wrap-primitive-in-function *))
+    (hard-bind frame '_/ (wrap-primitive-in-function //))
+    (hard-bind frame '_% (wrap-primitive-in-function %))
+    (hard-bind frame '_= (wrap-primitive-in-function =))
+    (hard-bind frame '_< (wrap-primitive-in-function <))
+    (hard-bind frame '_> (wrap-primitive-in-function >))
+    (hard-bind frame '_<= (wrap-primitive-in-function <=))
+    (hard-bind frame '_>= (wrap-primitive-in-function >=))
+
+    (hard-bind frame 'first (wrap-primitive-in-function first))
+    (hard-bind frame 'rest (wrap-primitive-in-function rest))
+    (hard-bind frame 'cons (wrap-primitive-in-function cons))
+
+    (hard-bind frame '? show-current-name-bindings-operator)
+    frame))
 
 ;; return an interpreter's evaluate function
 (define make-interpreter
