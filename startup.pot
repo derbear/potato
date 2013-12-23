@@ -23,6 +23,14 @@
 	    (first list))
 	list))) ; nil
 
+(define second
+  (func (list)
+    (if list
+	(if (rest list)
+	    (first (rest list))
+	    (make-error "cannot get second of length-1 list"))
+	(make-error "cannot get second of length-0 list"))))
+
 (define append
   (func (l1 l2)
     (if l1
