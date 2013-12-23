@@ -16,20 +16,17 @@ struct library {
 
 /* always do global loads */
 struct obj* bin_load(struct obj* operand, struct env* env) {
-  obj_type types[] = {LITERAL, NUMBER};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
 
   int mode;
-  if (processed[1]->number) {
+  if (second->number) {
     mode = RTLD_LAZY | RTLD_GLOBAL;
   } else {
     mode = RTLD_NOW | RTLD_GLOBAL;
   }
 
-  void* lib = dlopen(processed[0]->string, mode);
+  void* lib = dlopen(first->string, mode);
   if (lib) {
     struct library* wrapper = malloc(sizeof(struct library*));
     wrapper->open = 1;
@@ -44,17 +41,14 @@ struct obj* bin_load(struct obj* operand, struct env* env) {
 }
 
 struct obj* bin_get(struct obj* operand, struct env* env) {
-  obj_type types[] = {LIBRARY, LITERAL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
 
-  struct library* wrapped = processed[0]->data;
+  struct library* wrapped = first->data;
   if (!wrapped->open) {
     return make_error("library has been closed already");
   }
-  void* primitive = dlsym(wrapped->ref, processed[1]->string);
+  void* primitive = dlsym(wrapped->ref, second->string);
   if (primitive) {
     return make_object(PRIMITIVE, primitive);
   } else {
@@ -63,13 +57,9 @@ struct obj* bin_get(struct obj* operand, struct env* env) {
 }
 
 struct obj* bin_close(struct obj* operand, struct env* env) {
-  obj_type types[] = {LIBRARY};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
-  if (!processed) {
-    return operand;
-  }
+  struct obj* first = operand->cell->first;
 
-  struct library* wrapped = processed[0]->data;
+  struct library* wrapped = first->data;
   if (!wrapped->open) {
     return make_error("library has been closed already");
   }

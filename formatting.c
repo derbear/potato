@@ -8,7 +8,7 @@
 #include "util.h"
 
 struct obj* c_snprintf_binding(struct obj* op_list, struct env* env) {
-  struct obj* arg_proc = list(op_list, env);
+  struct obj* arg_proc = proc_operands(op_list, env);
   struct obj* fmt_str_obj = arg_proc->cell->first;
   struct obj* args = arg_proc->cell->rest;
   struct obj* fmt_size_obj = args->cell->first;

@@ -6,10 +6,12 @@
 
 struct env; // forward declaration
 
+extern int OBJECTS_VERSION;
+
 typedef enum {
   DONE = -1, // returned on EOF
   ERROR = 0,
-  SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, FUNCTION, MACRO,
+  SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, SPCFORM, FUNCTION, MACRO,
   LITERAL, STREAM,
   THUNK, // used to implement tail recursion
   LIBRARY, // dynamically loaded binary libraries

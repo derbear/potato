@@ -83,4 +83,6 @@ struct obj** prologue(struct obj** operand, struct env* env,
 		      int is_applicative, int propagates_exceptions,
 		      int num_args, obj_type* arg_types); // TODO variable length args
 
+struct obj* proc_operands(struct obj* operand, struct env* env);
+
 #endif

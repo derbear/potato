@@ -12,7 +12,19 @@
 #include "data.h"
 #include "io.h"
 
-struct obj* list(struct obj*, struct env*); // forward declaration for apply()
+struct obj* proc_operands(struct obj* operand, struct env* env) {
+  // this doubles as a shortcut for evaluating all operands
+  if (operand->type == NIL) {
+    return operand;
+  } else if (operand->type != CELL) {
+    return make_error("malformed arguments passed to <LIST>");
+  }
+  struct obj* first = evaluate(operand->cell->first, env);
+  struct obj* rest = proc_operands(operand->cell->rest, env);
+  if (first->type == ERROR) return first;
+  else if (rest->type == ERROR) return rest;
+  return make_object(CELL, make_cell(first, rest));
+}
 
 #define DEFAULT_FRAME_INITIAL_SIZE 1 // default env size for a function call
 
@@ -35,7 +47,7 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
     }
 
     if (operator->type == FUNCTION) {
-      operand = list(operand, env);
+      operand = proc_operands(operand, env);
     }
     if (operand->type == ERROR) return operand;
 
@@ -74,7 +86,12 @@ struct obj* apply(struct obj* operator, struct obj* operand, struct env* env) {
     } else { // it's a macro; returned value is evaluated anyways
       return evaluate(procedure->cell->first, call_env);
     }
-  } else if (operator->type == PRIMITIVE) {
+  } else if (operator->type == PRIMITIVE || operator->type == SPCFORM) {
+    if (operator->type == PRIMITIVE) {
+      operand = proc_operands(operand, env);
+    }
+    if (operand->type == ERROR) return operand;
+
     struct obj* (*raw_func)(struct obj*, struct env*) = operator->data;
     return (*raw_func) (operand, env);
   }
@@ -275,121 +292,84 @@ char* debug_obj_contents(struct obj* obj) {
 // ********** Built-in primitive operators
 
 struct obj* add(struct obj* operand, struct env* env) {
-  obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-  int result = processed[0]->number + processed[1]->number;
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  int result = first->number + second->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* sub(struct obj* operand, struct env* env) {
-  obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-  int result = processed[0]->number - processed[1]->number;
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  int result = first->number - second->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* mul(struct obj* operand, struct env* env) {
-  obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-  int result = processed[0]->number * processed[1]->number;
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  int result = first->number * second->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* floor_div(struct obj* operand, struct env* env) {
-  obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-  if (processed[1]->number == 0) {
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  if (second->number == 0) {
     return make_error("attempted to divide by zero");
   }
-  int result = processed[0]->number / processed[1]->number;
+  int result = first->number / second->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* mod(struct obj* operand, struct env* env) {
-  obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-  if (processed[1]->number == 0) {
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  if (second->number == 0) {
     return make_error("mod by zero undefined");
   }
-  int result = processed[0]->number % processed[1]->number;
+  int result = first->number % second->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* equals(struct obj* operand, struct env* env) { // TODO generalize
-  obj_type types[] = {NIL, NIL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
 
-  if (processed[0]->type != processed[1]->type) {
+  if (first->type != second->type) {
     return make_object(NIL, 0);
   }
 
-  if (processed[0]->type == NUMBER) {
-    if (processed[0]->number == processed[1]->number) {
-      return processed[0];
+  if (first->type == NUMBER) {
+    if (first->number == second->number) {
+      return first;
     }
-  } else if (processed[0]->type == NIL) {
+  } else if (first->type == NIL) {
     return make_object(SYMBOL, "t");
-  } else if (processed[0]->type == SYMBOL) {
-    if (str_eq(processed[0]->string, processed[1]->string)) {
-      return processed[0];
+  } else if (first->type == SYMBOL) {
+    if (str_eq(first->string, second->string)) {
+      return first;
     }
   }
   return make_object(NIL, 0);
 }
 
 struct obj* lessthan(struct obj* operand, struct env* env) {
-  obj_type types[] = {NUMBER, NUMBER};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-  if (processed[0]->number < processed[1]->number) {
-    return processed[0];
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  if (first->number < second->number) {
+    return first;
   } else {
     return make_object(NIL, 0);
   }
 }
 
 struct obj* first(struct obj* operand, struct env* env) {
-  obj_type types[] = {CELL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
-  if (!processed) {
-    return operand;
-  }
-  if (processed[0]->type == NIL) {
-    return processed[0];
-  }
-  return processed[0]->cell->first;
+  return operand->cell->first->cell->first;
 }
 
 struct obj* rest(struct obj* operand, struct env* env) {
-  obj_type types[] = {CELL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
-  if (!processed) {
-    return operand;
-  }
-  if (processed[0]->type == NIL) {
-    return processed[0];
-  }
-  return processed[0]->cell->rest;
+  return operand->cell->first->cell->rest;
 }
 
 struct obj* quote(struct obj* operand, struct env* env) {
@@ -401,25 +381,9 @@ struct obj* quote(struct obj* operand, struct env* env) {
 }
 
 struct obj* construct(struct obj* operand, struct env* env) {
-  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 2, 0);
-  if (!processed) {
-    return operand;
-  }
-  return make_object(CELL, make_cell(processed[0], processed[1]));
-}
-
-struct obj* list(struct obj* operand, struct env* env) {
-  // this doubles as a shortcut for evaluating all operands
-  if (operand->type == NIL) {
-    return operand;
-  } else if (operand->type != CELL) {
-    return make_error("malformed arguments passed to <LIST>");
-  }
-  struct obj* first = evaluate(operand->cell->first, env);
-  struct obj* rest = list(operand->cell->rest, env);
-  if (first->type == ERROR) return first;
-  else if (rest->type == ERROR) return rest;
-  return make_object(CELL, make_cell(first, rest));
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  return make_object(CELL, make_cell(first, second));
 }
 
 struct obj* define(struct obj* operand, struct env* env) {
@@ -477,18 +441,14 @@ struct obj* function(struct obj* operand, struct env* env) {
 #define TYPEOFCASE(TYPE) {case TYPE: return make_object(SYMBOL, #TYPE);}
 
 struct obj* typeof(struct obj* operand, struct env* env) {
-  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
-  if (!processed) {
-    return operand;
-  }
-
-  switch (processed[0]->type) { // TODO safe to return const strings?
+  switch (operand->cell->first->type) { // TODO safe to return const strings?
     TYPEOFCASE(NUMBER);
     TYPEOFCASE(SYMBOL);
     TYPEOFCASE(LITERAL);
     TYPEOFCASE(NIL);
     TYPEOFCASE(PRIMITIVE);
     TYPEOFCASE(FUNCTION);
+    TYPEOFCASE(SPCFORM);
     TYPEOFCASE(MACRO);
     TYPEOFCASE(STREAM);
     TYPEOFCASE(CELL);
@@ -498,13 +458,7 @@ struct obj* typeof(struct obj* operand, struct env* env) {
 }
 
 struct obj* mark_macro(struct obj* operand, struct env* env) {
-  obj_type types[] = {FUNCTION};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
-  if (!processed) {
-    return operand;
-  }
-
-  struct obj* copy = make_object(MACRO, processed[0]->data);
+  struct obj* copy = make_object(MACRO, operand->cell->first->data);
   return copy;
 }
 
@@ -529,62 +483,32 @@ struct obj* ifelse(struct obj* operand, struct env* env) {
 }
 
 struct obj* open(struct obj* operand, struct env* env) {
-  obj_type types[] = {LITERAL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
-  if (!processed) {
-    return operand;
-  }
-
-  FILE* f = fopen(processed[0]->string, "r");
+  FILE* f = fopen(operand->cell->first->string, "r");
   struct reader* reader = make_reader(f);
   struct obj* stream = make_object(STREAM, reader);
   return stream;
 }
 
 struct obj* builtin_error(struct obj* operand, struct env* env) {
-  obj_type types[] = {LITERAL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
-  if (!processed) {
-    return operand;
-  }
-
-  struct obj* msgobj = processed[0];
+  struct obj* msgobj = operand->cell->first;
   char* msg = msgobj->string;
   return make_error(msg);
 }
 
 struct obj* builtin_eval(struct obj* operand, struct env* env) {
-  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
-  if (!processed) {
-    return operand;
-  }
-  return evaluate(processed[0], env);
+  return evaluate(operand->cell->first, env);
 }
 
 struct obj* builtin_apply(struct obj* operand, struct env* env) {
   // prologue() function isn't sophisticated enough to do FUNCTION | MACRO
   // so accept anything for first arg and fail later
   // (this will evaluate second argument even if first does not fit)
-  obj_type types1[] = {NIL, CELL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types1);
-  if (!processed) {
-    return operand;
-  } else if (!(processed[0]->type == FUNCTION ||
-	       processed[0]->type == PRIMITIVE ||
-	       processed[0]->type == MACRO)) {
-    return make_error("apply requires a callable as its first argument");
-  }
-
-  return apply(processed[0], processed[1], env);
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  return apply(first, second, env);
 }
 
 struct obj* builtin_read(struct obj* operand, struct env* env) {
-  if (list_len(operand) != 0 &&
-      list_len(operand) != 1) {
-    return make_error("<READ> takes either zero or one args");
-  }
-
-  operand = list(operand, env);
   if (list_len(operand) == 0) {
     return next_object(stdin_reader);
   } else {
@@ -601,26 +525,13 @@ struct obj* builtin_read(struct obj* operand, struct env* env) {
 }
 
 struct obj* builtin_print(struct obj* operand, struct env* env) {
-  struct obj** processed = prologue(&operand, env, 1, 0, 1, 1, 1, 0);
-  if (!processed) {
-    // TODO have something else catch exceptions
-    print_obj(operand);
-    printf("\n");
-    return make_object(NIL, 0);
-  }
-  print_obj(processed[0]);
+  print_obj(operand->cell->first);
   printf("\n");
-  return processed[0];
+  return operand->cell->first;
 }
 
 struct obj* load(struct obj* operand, struct env* env) {
-  obj_type types[] = {LITERAL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
-  if (!processed) {
-    return operand;
-  }
-
-  char* filename = processed[0]->string;
+  char* filename = operand->cell->first->string;
   FILE* f = fopen(filename, "r");
   if (!f) {
     return make_error("file not found");
@@ -643,23 +554,15 @@ struct obj* load(struct obj* operand, struct env* env) {
 }
 
 struct obj* set_first(struct obj* operand, struct env* env) {
-  obj_type types[] = {CELL, NIL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-
-  processed[0]->cell->first = processed[1];
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  first->cell->first = second;
   return make_object(NIL, 0);
 }
 
 struct obj* set_rest(struct obj* operand, struct env* env) {
-  obj_type types[] = {CELL, NIL};
-  struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
-  if (!processed) {
-    return operand;
-  }
-
-  processed[0]->cell->rest = processed[1];
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  first->cell->rest = second;
   return make_object(NIL, 0);
 }
