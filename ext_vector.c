@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 
+#include "globals.h"
 #include "data.h"
 #include "eval.h" // for list_len
 #include "util.h"

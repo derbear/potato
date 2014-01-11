@@ -1,12 +1,22 @@
-// TODO only works on Unix-like systems
-
-#include <dlfcn.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "globals.h"
 #include "data.h"
 #include "util.h"
+#ifdef _WIN32
+/* TODO implement DLL loading */
+struct obj* bin_load(struct obj* operand, struct env* env) {
+  return make_error("Dynamic library loading not supported on Windows.");
+}
+struct obj* bin_get(struct obj* operand, struct env* env) {
+  return make_error("Dynamic library loading not supported on Windows.");
+}
+struct obj* bin_close(struct obj* operand, struct env* env) {
+  return make_error("Dynamic library loading not supported on Windows.");
+}
+#else
+#include <dlfcn.h>
 
 struct library {
   int open;
@@ -74,3 +84,4 @@ struct obj* bin_close(struct obj* operand, struct env* env) {
     return make_object(NIL, 0);
   }
 }
+#endif

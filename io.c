@@ -332,9 +332,8 @@ struct obj* next_object(struct reader* r) {
 
   struct obj* ret = p_next_object(r);
   if (ret->type == ERROR) { // TODO alloc more smartly
-    char* errorstrptr;
-    asprintf(&errorstrptr, "line %d: %s", r->linenumber, (char*) ret->data);
-    ret = make_object(ERROR, errorstrptr);
+    // asprintf(&errorstrptr, "line %d: %s", r->linenumber, (char*) ret->data); // TODO reintegrate
+    ret = make_object(ERROR, "parser error in next_object!()");
   }
   return ret;
 }

@@ -18,15 +18,16 @@
 
 #include "extensions.h"
 
-#define STARTUP_FILE "startup.pot"
+// #define STARTUP_FILE "./startup.pot"
+#define STARTUP_FILE "C:\\Users\\Derek\\Source\\Repos\\potato\\startup.pot"
 
 void import(void (*init_func)()) {
   init_func();
 }
 
 int bootstrap(int argc, char* argv[]) {
-  import(ext_bind_stdio);
-  import(ext_vector);
+//  import(ext_bind_stdio);
+//  import(ext_vector);
 
   struct obj** translated = malloc(sizeof(struct obj*) * argc);
   for (int i = 0; i < argc; i++) {

@@ -1,3 +1,6 @@
+(define format (func x (print (first x))))
+(define sys-stdout nil)
+
 (define fib
   (func (x)
        (if (< x 0)

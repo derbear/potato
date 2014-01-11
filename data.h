@@ -4,6 +4,9 @@
 #ifndef DATA_H_INCLUDED
 #define DATA_H_INCLUDED
 
+/* TODO move to somewhere portable */
+#define snprintf _snprintf
+
 struct env; // forward declaration
 
 typedef enum {

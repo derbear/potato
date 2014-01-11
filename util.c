@@ -89,6 +89,7 @@ int list_len(struct obj* obj) {
   else return ret+1;
 }
 
+#define ERROR_BUFSIZE 1000
 struct obj** prologue(struct obj** operand,
 		      struct env* env,
 		      int is_fixed_length,
@@ -97,16 +98,17 @@ struct obj** prologue(struct obj** operand,
 		      int propagates_exceptions,
 		      int num_args,
 		      obj_type* arg_types) {
+  static char ERROR_BUF[ERROR_BUFSIZE];
   int size;
   char* fmt = "function requires %d arg(s)";
   struct obj** flattened = flatten(*operand, &size);
-  char* errorstrptr;
 
   if (is_fixed_length) {
     if (size != num_args) {
-      asprintf(&errorstrptr, fmt, num_args);
-      if (DEBUG) {
-	print_obj(*operand);
+      int errorlen = snprintf(ERROR_BUF, ERROR_BUFSIZE, fmt, num_args);
+      char* errorstrptr = malloc(errorlen);
+	  if (DEBUG) {
+        print_obj(*operand);
       }
       *operand = make_object(ERROR, errorstrptr);
       return 0;
@@ -132,8 +134,7 @@ struct obj** prologue(struct obj** operand,
 	if (!(flattened[i]->type == NIL && arg_types[i] == CELL) &&
 	    !(flattened[i]->type == PRIMITIVE && arg_types[i] == FUNCTION) &&
 	    arg_types[i] != NIL) {
-	  errorstrptr = "incorrect argument type(s)";
-	  *operand = make_object(ERROR, errorstrptr);
+	  *operand = make_object(ERROR, "incorrect argument type(s)");
 	  return 0;
 	}
       }

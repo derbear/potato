@@ -1,4 +1,7 @@
-(load "bind-native.pot")
+(define format (func x (print (first x))))
+(define sys-stdout nil)
+
+;; (load "bind-native.pot")
 
 ;;; List utils
 
@@ -127,7 +130,7 @@
 
 ;;; I/O
 
-(define format
+(define format_
   (func (str dest)
     (define vector (vector-from-string str))
     (define vector-len (vector-length vector))
@@ -146,16 +149,16 @@
 
 ;;; Main code
 
-(load "interpreter.pot")
+; (load "interpreter.pot")
 
-(define bootstrap-eval (make-interpreter))
+; (define bootstrap-eval (make-interpreter))
 
 ;; (define repl-closure
 (define repl
   (func (prompt)
-    (format prompt sys-stdout)
-    (print (bootstrap-eval (read)))
-;    (print (eval (read)))
+;    (format prompt sys-stdout)
+;    (print (bootstrap-eval (read)))
+    (print (eval (read)))
     (repl prompt)))
 
 (if (= 1 (length program-arguments))
