@@ -3,6 +3,7 @@
 
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 #include "data.h"
@@ -39,8 +40,8 @@ struct obj* make_error(char* data) {
   }
   if (!data) return err;
 
-  char* copy = malloc(str_len(data) + 1);
-  str_cpy(data, copy);
+  char* copy = malloc(strlen(data) + 1);
+  strcpy(copy, data);
   err->data = copy;
   if (DEBUG) {
     //print_obj(err);

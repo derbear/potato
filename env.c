@@ -2,6 +2,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "util.h"
 #include "globals.h"
@@ -60,7 +61,7 @@ struct obj* lookup_func(struct env* env, char* name, int recursive) {
   int i = 0;
   while (i < env->next_free) {
     s_entry entry = env->list[i];
-    if (str_eq(name, entry.name)) {
+    if (!strcmp(name, entry.name)) {
       return entry.object;
     }
     i++;

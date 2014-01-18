@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "util.h"
 #include "data.h"
@@ -76,7 +77,7 @@ int starts_token_str(char c) {
   return ((c >= 'a' && c <= 'z') ||
 	  (c >= 'A' && c <= 'Z') ||
 	  (c >= '0' && c <= '9') ||
-	  str_contains("!@#$%^&*-_=+/?<>:", c));
+	  strchr("!@#$%^&*-_=+/?<>:", c));
 }
 
 int continues_token_str(char c) {
@@ -84,7 +85,7 @@ int continues_token_str(char c) {
 }
 
 int is_whitespace(char c) {
-  return str_contains(" \t\n", c);
+  return strchr(" \t\n", c) != 0;
 }
 
 int to_integer(char* tstr) { // tstr = token string
@@ -231,12 +232,12 @@ void token_push(struct reader* r, s_token t) {
 
 char* make_quotestr(char* quotestr) {
   char* ret = malloc(sizeof(quotestr));
-  str_cpy(quotestr, ret);
+  strcpy(ret, quotestr);
   return ret;
 }
 
 struct obj* classify(char* token_str) {
-  if (str_eq("nil", token_str)) {
+  if (!strcmp("nil", token_str)) {
     return make_object(NIL, 0);
   }
 

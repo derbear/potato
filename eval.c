@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "eval.h"
 
@@ -347,7 +348,7 @@ struct obj* equals(struct obj* operand, struct env* env) { // TODO generalize
   } else if (first->type == NIL) {
     return make_object(SYMBOL, "t");
   } else if (first->type == SYMBOL) {
-    if (str_eq(first->string, second->string)) {
+    if (!strcmp(first->string, second->string)) {
       return first;
     }
   }

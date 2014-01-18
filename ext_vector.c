@@ -1,6 +1,7 @@
 #include "ext_vector.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "data.h"
 #include "eval.h" // for list_len
@@ -58,7 +59,7 @@ struct obj* ext_vector_from_string(struct obj* operand, struct env* env) {
   }
 
   char* str = processed[0]->string;
-  int length = str_len(str);
+  int length = strlen(str);
   vector* v = malloc(sizeof(vector));
   v->data = malloc(sizeof(struct obj*) * length);
   v->size = length;
