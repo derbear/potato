@@ -89,13 +89,13 @@
 ;; generates equivalent chained if-expression
 (define condf
   (func switch-list
-    (define cook-cond-statement
+    (define make-cond-statement
       (func (conditional consequence alternative)
 	(list 'if conditional consequence alternative)))
     (define condf-helper
       (func (switch-list)
 	(if (rest switch-list)
-	    (cook-cond-statement (first (first switch-list))
+	    (make-cond-statement (first (first switch-list))
 				 (second (first switch-list))
 				 (condf-helper (rest switch-list)))
 	    (if (= (first (first switch-list)) 'else) ; (cond (else <expr>))
@@ -127,35 +127,12 @@
 
 ;;; I/O
 
-(define format
-  (func (str dest)
-    (define vector (vector-from-string str))
-    (define vector-len (vector-length vector))
-    (define print-char-at
-      ;; prints character at index
-      (func (vector index)
-	(c-putc dest (vector-index vector index))))
-    (define format-recur
-      (func (vector index)
-	(if (>= index vector-len)
-	    str
-	    ((func ()
-	       (print-char-at vector index)
-	       (format-recur vector (+ index 1)))))))
-    (format-recur vector 0)))
-
 ;;; Main code
-
-(load "interpreter.pot")
-
-(define bootstrap-eval (make-interpreter))
 
 ;; (define repl-closure
 (define repl
   (func (prompt)
-    (format prompt sys-stdout)
-    (print (bootstrap-eval (read)))
-;    (print (eval (read)))
+    (print (eval (read)))
     (repl prompt)))
 
 (if (= 1 (length program-arguments))
