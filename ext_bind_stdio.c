@@ -26,7 +26,7 @@ void ext_bind_stdio() {
 }
 
 struct obj* ext_bind_stdio_fopen(struct obj* operand, struct env* env) {
-  obj_type types[] = {LITERAL, LITERAL};
+  obj_type types[] = {STRING, STRING};
   struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 2, types);
   if (!processed) {
     return operand;

@@ -33,5 +33,5 @@ struct obj* c_snprintf_binding(struct obj* op_list, struct env* env) {
 	   p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7],
 	   p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15]);
   target[fmt_size] = 0; // always null-term
-  return make_object(LITERAL, target);
+  return make_object(STRING, target);
 }

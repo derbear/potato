@@ -8,8 +8,6 @@
 #ifndef UTIL_H_INCLUDED
 #define UTIL_H_INCLUDED
 
-// functils
-
 #include "data.h"
 
 /**
@@ -57,5 +55,8 @@ struct obj** prologue(struct obj** operand, struct env* env,
 		      int num_args, obj_type* arg_types); // TODO variable length args
 
 struct obj* proc_operands(struct obj* operand, struct env* env);
+
+#define LIST_FIRST(cell_obj) ((cell_obj)->cell->first)
+#define LIST_SECOND(cell_obj) ((cell_obj)->cell->rest->cell->first)
 
 #endif

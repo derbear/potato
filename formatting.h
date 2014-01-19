@@ -9,8 +9,8 @@
  *
  * Returns formatted string which was malloc()ed.
  *
- * Arguments: LITERAL format string, NUMBER size, ARGS arguments to snprintf
- * Return: LITERAL formatted string
+ * Arguments: STRING format string, NUMBER size, ARGS arguments to snprintf
+ * Return: STRING formatted string
  */
 struct obj* c_snprintf_binding(struct obj* args, struct env* env);
 

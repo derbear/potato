@@ -112,7 +112,7 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
   while (1) {
     switch(obj->type) {
     case NUMBER:
-    case LITERAL:
+    case STRING:
       return obj;
     case SYMBOL:
       return lookup(env, obj->string);
@@ -239,7 +239,7 @@ int snprint_obj(struct obj* obj, char* result, int limit) {
     return snprintf(result, limit, "%d", obj->number);
   case SYMBOL:
     return snprintf(result, limit, "%s", (char*) obj->data);
-  case LITERAL:
+  case STRING:
     return snprintf(result, limit, "\"%s\"", (char*) obj->data);
   case NIL:
     return snprintf(result, limit, "nil");
@@ -293,73 +293,58 @@ char* debug_obj_contents(struct obj* obj) {
 // ********** Built-in primitive operators
 
 struct obj* add(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  int result = first->number + second->number;
+  int result = LIST_FIRST(operand)->number + LIST_SECOND(operand)->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* sub(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  int result = first->number - second->number;
+  int result = LIST_FIRST(operand)->number - LIST_SECOND(operand)->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* mul(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  int result = first->number * second->number;
+  int result = LIST_FIRST(operand)->number * LIST_SECOND(operand)->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* floor_div(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  if (second->number == 0) {
+  if (LIST_SECOND(operand)->number == 0) {
     return make_error("attempted to divide by zero");
   }
-  int result = first->number / second->number;
+  int result = LIST_FIRST(operand)->number / LIST_SECOND(operand)->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* mod(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  if (second->number == 0) {
+  if (LIST_SECOND(operand)->number == 0) {
     return make_error("mod by zero undefined");
   }
-  int result = first->number % second->number;
+  int result = LIST_FIRST(operand)->number % LIST_SECOND(operand)->number;
   return make_small_object(NUMBER, result);
 }
 
 struct obj* equals(struct obj* operand, struct env* env) { // TODO generalize
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-
-  if (first->type != second->type) {
+  if (LIST_FIRST(operand)->type != LIST_SECOND(operand)->type) {
     return make_object(NIL, 0);
   }
 
-  if (first->type == NUMBER) {
-    if (first->number == second->number) {
-      return first;
+  if (LIST_FIRST(operand)->type == NUMBER) {
+    if (LIST_FIRST(operand)->number == LIST_SECOND(operand)->number) {
+      return LIST_FIRST(operand);
     }
-  } else if (first->type == NIL) {
+  } else if (LIST_FIRST(operand)->type == NIL) {
     return make_object(SYMBOL, "t");
-  } else if (first->type == SYMBOL) {
-    if (!strcmp(first->string, second->string)) {
-      return first;
+  } else if (LIST_FIRST(operand)->type == SYMBOL) {
+    if (!strcmp(LIST_FIRST(operand)->string, LIST_SECOND(operand)->string)) {
+      return LIST_FIRST(operand);
     }
   }
   return make_object(NIL, 0);
 }
 
 struct obj* lessthan(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  if (first->number < second->number) {
-    return first;
+  if (LIST_FIRST(operand)->number < LIST_SECOND(operand)->number) {
+    return LIST_FIRST(operand);
   } else {
     return make_object(NIL, 0);
   }
@@ -382,9 +367,7 @@ struct obj* quote(struct obj* operand, struct env* env) {
 }
 
 struct obj* construct(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  return make_object(CELL, make_cell(first, second));
+  return make_object(CELL, make_cell(LIST_FIRST(operand), LIST_SECOND(operand)));
 }
 
 struct obj* define(struct obj* operand, struct env* env) {
@@ -445,7 +428,7 @@ struct obj* typeof(struct obj* operand, struct env* env) {
   switch (operand->cell->first->type) { // TODO safe to return const strings?
     TYPEOFCASE(NUMBER);
     TYPEOFCASE(SYMBOL);
-    TYPEOFCASE(LITERAL);
+    TYPEOFCASE(STRING);
     TYPEOFCASE(NIL);
     TYPEOFCASE(PRIMITIVE);
     TYPEOFCASE(FUNCTION);
@@ -504,9 +487,7 @@ struct obj* builtin_apply(struct obj* operand, struct env* env) {
   // prologue() function isn't sophisticated enough to do FUNCTION | MACRO
   // so accept anything for first arg and fail later
   // (this will evaluate second argument even if first does not fit)
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  return apply(first, second, env);
+  return apply(LIST_FIRST(operand), LIST_SECOND(operand), env);
 }
 
 struct obj* builtin_read(struct obj* operand, struct env* env) {
@@ -555,15 +536,11 @@ struct obj* load(struct obj* operand, struct env* env) {
 }
 
 struct obj* set_first(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  first->cell->first = second;
+  LIST_FIRST(operand)->cell->first = LIST_SECOND(operand);
   return make_object(NIL, 0);
 }
 
 struct obj* set_rest(struct obj* operand, struct env* env) {
-  struct obj* first = operand->cell->first;
-  struct obj* second = operand->cell->rest->cell->first;
-  first->cell->rest = second;
+  LIST_FIRST(operand)->cell->rest = LIST_SECOND(operand);
   return make_object(NIL, 0);
 }

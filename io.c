@@ -1,7 +1,6 @@
 // ********** Derek Leung
 // ********** File I/O and parsing - with more features
 
-#define _GNU_SOURCE // TODO we'll remove this once we remove asprintf
 #include "io.h"
 
 #include <stdio.h>
@@ -303,7 +302,7 @@ struct obj* p_next_object(struct reader* r) {
   if (n.type == STR) {
     return parse_atom(n);
   } else if (n.type == LIT) {
-    return make_object(LITERAL, n.data);
+    return make_object(STRING, n.data);
   } else if (n.type == OPAR) {
     return next_list(r);
   } else if (n.type == END) {
@@ -333,9 +332,7 @@ struct obj* next_object(struct reader* r) {
 
   struct obj* ret = p_next_object(r);
   if (ret->type == ERROR) { // TODO alloc more smartly
-    char* errorstrptr;
-    asprintf(&errorstrptr, "line %d: %s", r->linenumber, (char*) ret->data);
-    ret = make_object(ERROR, errorstrptr);
+    ret = make_object(ERROR, "parser error in next_object!()");
   }
   return ret;
 }

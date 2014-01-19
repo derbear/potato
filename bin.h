@@ -3,13 +3,13 @@
 #include "data.h"
 
 /**
- * Arguments: LITERAL library name, NUMBER lazy (1) or eager (0)
+ * Arguments: STRING library name, NUMBER lazy (1) or eager (0)
  * Return: LIBRARY | NIL on failure
  */
 struct obj* bin_load(struct obj* operand, struct env* env);
 
 /**
- * Arguments: LIBRARY, LITERAL symbol name
+ * Arguments: LIBRARY, STRING symbol name
  * Return: PRIMITIVE | NIL on failure
  */
 struct obj* bin_get(struct obj* operand, struct env* env);

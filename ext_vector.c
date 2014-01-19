@@ -52,7 +52,7 @@ struct obj* ext_vector_new(struct obj* operand, struct env* env) {
 }
 
 struct obj* ext_vector_from_string(struct obj* operand, struct env* env) {
-  obj_type types[] = {LITERAL};
+  obj_type types[] = {STRING};
   struct obj** processed = prologue(&operand, env, 1, 1, 1, 1, 1, types);
   if (!processed) {
     return operand;
