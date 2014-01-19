@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "eval.h"
@@ -236,7 +237,7 @@ int snprint_obj(struct obj* obj, char* result, int limit) {
 
   switch(obj->type) {
   case NUMBER:
-    return snprintf(result, limit, "%d", obj->number);
+    return snprintf(result, limit, "%jd", obj->number);
   case SYMBOL:
     return snprintf(result, limit, "%s", (char*) obj->data);
   case STRING:
@@ -293,34 +294,34 @@ char* debug_obj_contents(struct obj* obj) {
 // ********** Built-in primitive operators
 
 struct obj* add(struct obj* operand, struct env* env) {
-  int result = LIST_FIRST(operand)->number + LIST_SECOND(operand)->number;
-  return make_small_object(NUMBER, result);
+  intptr_t result = LIST_FIRST(operand)->number + LIST_SECOND(operand)->number;
+  return make_object(NUMBER, result);
 }
 
 struct obj* sub(struct obj* operand, struct env* env) {
-  int result = LIST_FIRST(operand)->number - LIST_SECOND(operand)->number;
-  return make_small_object(NUMBER, result);
+  intptr_t result = LIST_FIRST(operand)->number - LIST_SECOND(operand)->number;
+  return make_object(NUMBER, result);
 }
 
 struct obj* mul(struct obj* operand, struct env* env) {
-  int result = LIST_FIRST(operand)->number * LIST_SECOND(operand)->number;
-  return make_small_object(NUMBER, result);
+  intptr_t result = LIST_FIRST(operand)->number * LIST_SECOND(operand)->number;
+  return make_object(NUMBER, result);
 }
 
 struct obj* floor_div(struct obj* operand, struct env* env) {
   if (LIST_SECOND(operand)->number == 0) {
     return make_error("attempted to divide by zero");
   }
-  int result = LIST_FIRST(operand)->number / LIST_SECOND(operand)->number;
-  return make_small_object(NUMBER, result);
+  intptr_t result = LIST_FIRST(operand)->number / LIST_SECOND(operand)->number;
+  return make_object(NUMBER, result);
 }
 
 struct obj* mod(struct obj* operand, struct env* env) {
   if (LIST_SECOND(operand)->number == 0) {
     return make_error("mod by zero undefined");
   }
-  int result = LIST_FIRST(operand)->number % LIST_SECOND(operand)->number;
-  return make_small_object(NUMBER, result);
+  intptr_t result = LIST_FIRST(operand)->number % LIST_SECOND(operand)->number;
+  return make_object(NUMBER, result);
 }
 
 struct obj* equals(struct obj* operand, struct env* env) { // TODO generalize

@@ -66,11 +66,11 @@ struct obj* c_fclose(struct obj* operand, struct env* env) {
 
 struct obj* c_fgetc(struct obj* operand, struct env* env) {
   FILE* fptr = LIST_FIRST(operand)->data;
-  int result = getc(fptr);
+  intptr_t result = getc(fptr);
   if (ferror(fptr)) {
     return make_object(NIL, 0);
   } else {
-    return make_small_object(NUMBER, result);
+    return make_object(NUMBER, result);
   }
 }
 

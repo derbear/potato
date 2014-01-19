@@ -7,6 +7,7 @@
 #include "eval.h"
 #include "io.h"
 #include "util.h"
+#include "data.h"
 
 #define STARTUP_FILE "startup.pot"
 

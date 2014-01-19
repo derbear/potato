@@ -4,6 +4,8 @@
 #ifndef DATA_H_INCLUDED
 #define DATA_H_INCLUDED
 
+#include <stdint.h>
+
 struct env; // forward declaration
 
 typedef enum {
@@ -21,7 +23,7 @@ struct obj {
   obj_type type;
   union {
     void* data; // @heap
-    int number; // TODO use macros to limit size of this to pointer size
+    intptr_t number;
     char* string;
     struct cell* cell;
   };
@@ -52,15 +54,16 @@ struct cell* make_cell(struct obj* first, struct obj* rest);
  *
  * The object's data should point to somewhere on the heap unless otherwise
  * guaranteed to be safe.
+ *
+ * This is implemented as a macro to cast the second argument to a void pointer
+ * always before calling make_object_from_ptr.
  */
-struct obj* make_object(obj_type type, void* data);
+#define make_object(type, data) (make_object_from_ptr((type), (void*) (data)))
 
 /**
- * Same as make_object(), but accepts a numerical data-type.
- *
- * Intended for use on things smaller than a pointer.
+ * See make_object(type, data).
  */
-struct obj* make_small_object(obj_type type, int data); // TODO make macro
+struct obj* make_object_from_ptr(obj_type type, void* data);
 
 /**
  * Convenience function to create an error object, copying the given argument

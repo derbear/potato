@@ -19,17 +19,10 @@ struct cell* make_cell(struct obj* first, struct obj* rest) {
   return cell;
 }
 
-struct obj* make_object(obj_type type, void* data) {
+struct obj* make_object_from_ptr(obj_type type, void* data) {
   struct obj* object = malloc(sizeof(struct obj));
   object->type = type;
   object->data = data;
-  return object;
-}
-
-struct obj* make_small_object(obj_type type, int data) {
-  struct obj* object = malloc(sizeof(struct obj));
-  object->type = type;
-  object->number = data;
   return object;
 }
 

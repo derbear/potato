@@ -20,7 +20,7 @@ main: ${OBJECTS}
 clean:
 	rm -rf ${OBJECTS} *.gz ${EXECUTABLE} ${EXTENSIONS}
 
-main.o: globals.h eval.h builtins.h env.h main.c
+main.o: globals.h eval.h builtins.h env.h data.h main.c
 eval.o: data.h globals.h util.h data.h io.h env.h eval.h eval.c
 io.o: util.h data.h io.h io.c
 util.o: util.h util.c data.h eval.h

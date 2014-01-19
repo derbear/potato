@@ -5,6 +5,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 #include "util.h"
@@ -87,8 +88,8 @@ int is_whitespace(char c) {
   return strchr(" \t\n", c) != 0;
 }
 
-int to_integer(char* tstr) { // tstr = token string
-  int num = 0, sign = 1;
+intptr_t to_integer(char* tstr) { // tstr = token string
+  intptr_t num = 0, sign = 1;
   char* cptr = tstr;
 
   if (*cptr == '-') {
@@ -259,7 +260,7 @@ struct obj* classify(char* token_str) {
   }
 
   if (isnum) {
-    return make_small_object(NUMBER, to_integer(token_str));
+    return make_object(NUMBER, to_integer(token_str));
   }
   return make_object(SYMBOL, token_str);
 }
