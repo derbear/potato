@@ -25,18 +25,11 @@ void register_spcform(char* name, struct obj* (*func)(struct obj*,
   bind(global_env, name, make_object(SPCFORM, func));
 }
 
-/* TODO this is a stopgap fix to allow testing
-   Later we should upgrade eval */
-struct obj* global(struct obj* operand, struct env* env) {
-  return define(operand, global_env);
-}
-
 #define DEFAULT_GLOBAL_ENVIRONMENT_INITIAL_SIZE 50
 
 void initialize() {
   global_env = make_env(0, DEFAULT_GLOBAL_ENVIRONMENT_INITIAL_SIZE);
   stdin_reader = make_reader(stdin);
-
 
   register_spcform("quote", &quote);
   register_spcform("define", &define);
@@ -61,9 +54,10 @@ void initialize() {
   register_primitive("rest", &rest);
   register_primitive("cons", &construct);
 
-  register_primitive("cast", &cast);
-
   register_primitive("type", &typeof);
+  register_primitive("cast", &cast);
+  register_primitive("frame", &inspect_frame);
+
   register_primitive("apply", &builtin_apply);
 
   register_primitive("open", &open);
@@ -75,6 +69,4 @@ void initialize() {
   register_primitive("bin-load", &bin_load);
   register_primitive("bin-get", &bin_get);
   register_primitive("bin-close", &bin_close);
-
-  register_spcform("global", &global);
 }

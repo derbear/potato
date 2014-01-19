@@ -12,7 +12,7 @@ typedef enum {
   DONE = -1, // returned on EOF
   ERROR = 0,
   SYMBOL, NUMBER, CELL, NIL, PRIMITIVE, SPCFORM, FUNCTION, MACRO,
-  STRING, STREAM,
+  STRING, STREAM, FRAME,
   THUNK, // used to implement tail recursion (not lazy eval, currently)
   LIBRARY, // dynamically loaded binary libraries
   UNSPECIFIED, // i.e. unknown type

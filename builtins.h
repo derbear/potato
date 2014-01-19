@@ -120,6 +120,14 @@ struct obj* function(struct obj* operand, struct env* environment);
 struct obj* cast(struct obj* operand, struct env* environment);
 
 /**
+ * Without any arguments, returns the current frame from which this has been
+ * called.
+ *
+ * With a FRAME argument, returns the parent of that argument.
+ */
+struct obj* inspect_frame(struct obj* operand, struct env* environment);
+
+/**
  * Evaluates the first argument. If it is NIL, returns the value of the third
  * argument; otherwise, the second.
  */
@@ -139,7 +147,10 @@ struct obj* open(struct obj* operand, struct env* environment);
 struct obj* protect(struct obj* operand, struct env* environment);
 
 /**
- * Evaluates the first argument.
+ * Evaluates the first argument under the current environment.
+ *
+ * If a FRAME object is provided, evaluates the first argument under that frame
+ * instead.
  */
 struct obj* builtin_eval(struct obj* operand, struct env* environment);
 

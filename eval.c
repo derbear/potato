@@ -151,6 +151,8 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
 	}
 	return applied;
       }
+    case FRAME:
+      return obj;
     case LIBRARY:
       return obj;
     case STREAM:
@@ -252,6 +254,8 @@ int snprint_obj(struct obj* obj, char* result, int limit) {
     return snprintf(result, limit, "<USER-DEFINED-MACRO@%p>", obj->data);
   case STREAM:
     return snprintf(result, limit, "<DATA-STREAM@%p>", obj->data);
+  case FRAME: // TODO print contents and parent as well
+    return snprintf(result, limit, "<ENVIRONMENT-FRAME@%p>", obj->data);
   case LIBRARY:
     return snprintf(result, limit, "<BINARY-LIBRARY@%p>", obj->data);
   case CELL:
@@ -471,6 +475,21 @@ struct obj* cast(struct obj* operand, struct env* env) {
   return casted;
 }
 
+struct obj* inspect_frame(struct obj* operand, struct env* env) {
+  if (operand->type == NIL) {
+    return make_object(FRAME, env);
+  } else if (LIST_FIRST(operand)->type == FRAME) {
+    struct env* par = parent(LIST_FIRST(operand)->data);
+    if (!par) {
+      return make_object(NIL, 0);
+    } else {
+      return make_object(FRAME, par);
+    }
+  } else {
+    return make_error("must provide no args or valid frame object");
+  }
+}
+
 struct obj* ifelse(struct obj* operand, struct env* env) {
   struct obj** processed = prologue(&operand, env, 1, 0, 0, 1, 3, 0);
   if (!processed) {
@@ -516,7 +535,13 @@ struct obj* protect(struct obj* operand, struct env* env) {
 }
 
 struct obj* builtin_eval(struct obj* operand, struct env* env) {
-  return evaluate(operand->cell->first, env);
+  if (operand->cell->rest->type == NIL) {
+    return evaluate(operand->cell->first, env);
+  } else if (LIST_SECOND(operand)->type == FRAME) {
+    return evaluate(operand->cell->first, LIST_SECOND(operand)->data);
+  } else {
+    return make_error("must provide no args or valid frame object");
+  }
 }
 
 struct obj* builtin_apply(struct obj* operand, struct env* env) {

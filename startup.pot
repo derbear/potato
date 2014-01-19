@@ -139,12 +139,18 @@
 
 ;;; Main code
 
-;; (define repl-closure
-(define repl
-  (func (prompt)
-    (protect (print (eval (read))) display-error)
-    (repl prompt)))
+(define global-frame (frame))
+
+(define make-repl
+  (func ()
+    (define repl-frame (frame))
+    (define repl
+      (func (prompt)
+	(display prompt)
+	(protect (print (eval (read) repl-frame)) display-error)
+	(repl prompt)))
+    repl))
 
 (if (= 1 (length program-arguments))
-    (repl "> ")
+    ((make-repl) "> ")
     (load (first (rest program-arguments))))
