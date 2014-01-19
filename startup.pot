@@ -133,7 +133,7 @@
 
 ;;; I/O
 
-(define display (func (str) (c-fputs c-stdout str)))
+(define display (func (str) (c-fputs c-stdout str) nil))
 (define display-error
   (func (str) (display "ERROR: ") (display str) (display "\n")))
 

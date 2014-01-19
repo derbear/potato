@@ -111,6 +111,24 @@ intptr_t to_integer(char* tstr) { // tstr = token string
   return num * sign;
 }
 
+// call to parse character after (backquote)
+int escape_seq(char e) {
+  switch (e) {
+  case '\'': return '\'';
+  case '"': return '"';
+  case '\\': return '\\';
+  case '0': return '\0';
+  case 'a': return '\a';
+  case 'b': return '\b';
+  case 'f': return '\f';
+  case 'n': return '\n';
+  case 'r': return '\r';
+  case 't': return '\t';
+  case 'v': return '\v';
+  default: return -1;
+  }
+}
+
 //////////
 
 // @heap
@@ -151,6 +169,13 @@ s_token make_token_quoted(char first, struct reader* r) {
     if (size > MAX_SYMBOL_SIZE) {
       printf("ERROR: SYMBOL TOO LONG\n");
       exit(1);
+    }
+    if (c == '\\') {
+      char e = reader_pop(r);
+      if ((c = escape_seq(e)) == -1) {
+	printf("ERROR: INVALID ESCAPE SEQUENCE '\\%c'\n", e);
+	exit(1);
+      }
     }
     buf[size++] = c;
   }
