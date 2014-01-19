@@ -441,9 +441,33 @@ struct obj* typeof(struct obj* operand, struct env* env) {
   }
 }
 
-struct obj* mark_macro(struct obj* operand, struct env* env) {
-  struct obj* copy = make_object(MACRO, operand->cell->first->data);
-  return copy;
+#define CASTCASE(TYPE) } else if (!strcmp(typename, #TYPE)) { target_type = TYPE
+
+struct obj* cast(struct obj* operand, struct env* env) {
+  struct obj* first = operand->cell->first;
+  struct obj* second = operand->cell->rest->cell->first;
+  char* typename = second->data;
+  int target_type;
+  if (0) { // used for cleaner macro of following section
+    CASTCASE(NUMBER);
+    CASTCASE(SYMBOL);
+    CASTCASE(STRING);
+    CASTCASE(NIL);
+    CASTCASE(PRIMITIVE);
+    CASTCASE(FUNCTION);
+    CASTCASE(SPCFORM);
+    CASTCASE(MACRO);
+    CASTCASE(STREAM);
+    CASTCASE(CELL);
+    CASTCASE(ERROR); // unlike typeof, can use this to emit errors
+  } else {
+    if (DEBUG) {
+      printf("DEBUG: unknown type '%s'", typename);
+    }
+    return make_error("cannot cast to unknown type");
+  }
+  struct obj* casted = make_object(target_type, first->data);
+  return casted;
 }
 
 struct obj* ifelse(struct obj* operand, struct env* env) {

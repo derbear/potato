@@ -1,5 +1,8 @@
 (load "bind-native.pot")
 
+(define macro
+  (func (x) (cast x 'MACRO)))
+
 ;;; List utils
 
 (define list (func a a))

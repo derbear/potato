@@ -60,7 +60,7 @@ void initialize() {
   register_primitive("rest", &rest);
   register_primitive("cons", &construct);
 
-  register_primitive("macro", &mark_macro);
+  register_primitive("cast", &cast);
 
   register_primitive("type", &typeof);
   register_primitive("apply", &builtin_apply);

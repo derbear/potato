@@ -111,9 +111,13 @@ struct obj* typeof(struct obj* operand, struct env* environment);
 struct obj* function(struct obj* operand, struct env* environment);
 
 /**
- * Copy the function object but mark it as a macro.
+ * Non-destructively reinterprets the first argument as the type indicated by
+ * the second argument.
+ *
+ * The first argument can be any object, but the second argument should be a
+ * symbol which corresponds to the target type.
  */
-struct obj* mark_macro(struct obj* operand, struct env* environment);
+struct obj* cast(struct obj* operand, struct env* environment);
 
 /**
  * Evaluates the first argument. If it is NIL, returns the value of the third
