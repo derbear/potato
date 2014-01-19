@@ -1,4 +1,4 @@
-// Dynamic loading of binary library native objects (functions only)
+// Dynamic loading of binary library objects
 
 #include "data.h"
 
@@ -10,7 +10,7 @@ struct obj* bin_load(struct obj* operand, struct env* env);
 
 /**
  * Arguments: LIBRARY, STRING symbol name
- * Return: PRIMITIVE | NIL on failure
+ * Return: UNSPECIFIED-type object | NIL on failure
  */
 struct obj* bin_get(struct obj* operand, struct env* env);
 

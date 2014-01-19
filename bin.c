@@ -47,9 +47,9 @@ struct obj* bin_get(struct obj* operand, struct env* env) {
   if (!wrapped->open) {
     return make_error("library has been closed already");
   }
-  void* primitive = dlsym(wrapped->ref, second->string);
-  if (primitive) {
-    return make_object(PRIMITIVE, primitive);
+  void* object = dlsym(wrapped->ref, second->string);
+  if (object) {
+    return make_object(UNSPECIFIED, object);
   } else {
     return make_object(NIL, 0);
   }

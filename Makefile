@@ -1,11 +1,10 @@
 CFLAGS=-Wall -std=c99 -g -Werror
 LINK_FLAGS=-Wl,-export-dynamic -ldl
-CORE=eval.o io.o util.o globals.o data.o main.o env.o bin.o
-OBJECTS=${CORE} extensions.o
+OBJECTS=eval.o io.o util.o globals.o data.o main.o env.o bin.o
 EXECUTABLE=potato
 
 EXT_FLAGS=-fPIC
-EXTENSIONS=formatting.so
+EXTENSIONS=formatting.so cbind.so
 
 all: main ${EXTENSIONS}
 
@@ -21,7 +20,7 @@ main: ${OBJECTS}
 clean:
 	rm -rf ${OBJECTS} *.gz ${EXECUTABLE} ${EXTENSIONS}
 
-main.o: globals.h eval.h builtins.h env.h main.c ext_bind_stdio.c
+main.o: globals.h eval.h builtins.h env.h main.c
 eval.o: data.h globals.h util.h data.h io.h env.h eval.h eval.c
 io.o: util.h data.h io.h io.c
 util.o: util.h util.c data.h eval.h
@@ -31,8 +30,10 @@ env.o: env.h env.c util.h globals.h
 bin.o: bin.c bin.h data.h util.h globals.h
 	cc ${CFLAGS} -c -o bin.o bin.c
 
-extensions.o: ext_bind_stdio.c ext_vector.c ${CORE}
-
 formatting.so: formatting.c formatting.h data.h builtins.h util.h
 	cc ${CFLAGS} ${EXT_FLAGS} -Wno-format -c formatting.c # TODO this is pretty dangerous
 	cc -shared formatting.o -o formatting.so
+
+cbind.so: cbind.c cbind.h data.h util.h
+	cc ${CFLAGS} ${EXT_FLAGS} -c cbind.c
+	cc -shared cbind.o -o cbind.so

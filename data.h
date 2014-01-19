@@ -13,7 +13,7 @@ typedef enum {
   STRING, STREAM,
   THUNK, // used to implement tail recursion (not lazy eval, currently)
   LIBRARY, // dynamically loaded binary libraries
-  EXTENSION, // for extensions
+  UNSPECIFIED, // i.e. unknown type
 } obj_type;
 
 struct cell;
