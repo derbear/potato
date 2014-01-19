@@ -1,13 +1,14 @@
 (define primitive (func (f) (cast f 'PRIMITIVE)))
 
 (define cstd-lib (bin-load "./cbind.so" 0))
-(define c-stdin (primitive (bin-get cstd-lib "c_stdin")))
-(define c-stdout (primitive (bin-get cstd-lib "c_stdout")))
-(define c-stderr (primitive (bin-get cstd-lib "c_stderr")))
+(define c-stdin ((primitive (bin-get cstd-lib "c_stdin"))))
+(define c-stdout ((primitive (bin-get cstd-lib "c_stdout"))))
+(define c-stderr ((primitive (bin-get cstd-lib "c_stderr"))))
 (define c-fopen (primitive (bin-get cstd-lib "c_fopen")))
 (define c-fclose (primitive (bin-get cstd-lib "c_fclose")))
 (define c-fgetc (primitive (bin-get cstd-lib "c_fgetc")))
 (define c-fputc (primitive (bin-get cstd-lib "c_fputc")))
+(define c-fputs (primitive (bin-get cstd-lib "c_fputs")))
 
 (define format-lib (bin-load "./formatting.so" 0))
 (define snprintf (primitive (bin-get format-lib "c_snprintf_binding")))

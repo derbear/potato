@@ -84,3 +84,14 @@ struct obj* c_fputc(struct obj* operand, struct env* env) {
     return LIST_SECOND(operand);
   }
 }
+
+struct obj* c_fputs(struct obj* operand, struct env* env) {
+  FILE* fptr = (FILE*) (LIST_FIRST(operand)->data);
+  char* string = LIST_SECOND(operand)->string;
+  int result = fputs(string, fptr);
+  if (result == -1) {
+    return make_object(NIL, 0);
+  } else {
+    return LIST_SECOND(operand);
+  }
+}
