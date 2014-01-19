@@ -131,9 +131,12 @@ struct obj* ifelse(struct obj* operand, struct env* environment);
 struct obj* open(struct obj* operand, struct env* environment);
 
 /**
- * Create an error object from a string.
+ * Returns the evaluation of the first argument unless it returns an ERROR,
+ * in which case this calls the function/primitive specified by the second
+ * argument with the error string as the only argument (or NIL if no second
+ * argument is supplied).
  */
-struct obj* builtin_error(struct obj* operand, struct env* environment);
+struct obj* protect(struct obj* operand, struct env* environment);
 
 /**
  * Evaluates the first argument.

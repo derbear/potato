@@ -42,6 +42,7 @@ void initialize() {
   register_spcform("define", &define);
   register_spcform("func", &function);
   register_spcform("if", &ifelse);
+  register_spcform("protect", &protect);
 
   register_primitive("read", &builtin_read);
   register_primitive("eval", &builtin_eval);
@@ -67,8 +68,6 @@ void initialize() {
 
   register_primitive("open", &open);
   register_primitive("load", &load);
-
-  register_primitive("error", &builtin_error);
 
   register_primitive("set-first", &set_first);
   register_primitive("set-rest", &set_rest);

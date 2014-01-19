@@ -3,6 +3,9 @@
 (define macro
   (func (x) (cast x 'MACRO)))
 
+(define error
+  (func (x) (cast x 'ERROR)))
+
 ;;; List utils
 
 (define list (func a a))
@@ -34,8 +37,8 @@
     (if list
 	(if (rest list)
 	    (first (rest list))
-	    (make-error "cannot get second of length-1 list"))
-	(make-error "cannot get second of length-0 list"))))
+	    (error "cannot get second of length-1 list"))
+	(error "cannot get second of length-0 list"))))
 
 (define append
   (func (l1 l2)
@@ -130,12 +133,16 @@
 
 ;;; I/O
 
+(define display (func (str) (c-fputs c-stdout str)))
+(define display-error
+  (func (str) (display "ERROR: ") (display str) (display "\n")))
+
 ;;; Main code
 
 ;; (define repl-closure
 (define repl
   (func (prompt)
-    (print (eval (read)))
+    (protect (print (eval (read))) display-error)
     (repl prompt)))
 
 (if (= 1 (length program-arguments))

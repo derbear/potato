@@ -22,9 +22,9 @@ struct obj* proc_operands(struct obj* operand, struct env* env) {
     return make_error("malformed arguments passed to <LIST>");
   }
   struct obj* first = evaluate(operand->cell->first, env);
-  struct obj* rest = proc_operands(operand->cell->rest, env);
   if (first->type == ERROR) return first;
-  else if (rest->type == ERROR) return rest;
+  struct obj* rest = proc_operands(operand->cell->rest, env);
+  if (rest->type == ERROR) return rest;
   return make_object(CELL, make_cell(first, rest));
 }
 
@@ -498,10 +498,21 @@ struct obj* open(struct obj* operand, struct env* env) {
   return stream;
 }
 
-struct obj* builtin_error(struct obj* operand, struct env* env) {
-  struct obj* msgobj = operand->cell->first;
-  char* msg = msgobj->string;
-  return make_error(msg);
+struct obj* protect(struct obj* operand, struct env* env) {
+  struct obj* first = evaluate(LIST_FIRST(operand), env);
+  if (first->type == ERROR) {
+    if (operand->cell->rest->type == NIL) {
+      return make_object(NIL, 0);
+    } else {
+      first->type = STRING;
+      // singleton cell argument
+      struct obj* arglist = make_object(CELL,
+					make_cell(first, make_object(NIL, 0)));
+      return apply(evaluate(LIST_SECOND(operand), env), arglist, env);
+    }
+  } else {
+    return first;
+  }
 }
 
 struct obj* builtin_eval(struct obj* operand, struct env* env) {
@@ -509,9 +520,6 @@ struct obj* builtin_eval(struct obj* operand, struct env* env) {
 }
 
 struct obj* builtin_apply(struct obj* operand, struct env* env) {
-  // prologue() function isn't sophisticated enough to do FUNCTION | MACRO
-  // so accept anything for first arg and fail later
-  // (this will evaluate second argument even if first does not fit)
   return apply(LIST_FIRST(operand), LIST_SECOND(operand), env);
 }
 
