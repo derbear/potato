@@ -17,7 +17,7 @@ int bootstrap(int argc, char* argv[]) {
     translated[i] = make_object(STRING, argv[i]);
   }
   struct obj* arg_values = unflatten(translated, argc);
-  bind(global_env, "program-arguments", arg_values);
+  bind(global_env, "*program-arguments*", arg_values);
   struct obj* str = make_object(STRING, STARTUP_FILE);
   struct obj* arg = make_object(CELL, make_cell(str, make_object(NIL, 0)));
   struct obj* result = load(arg, global_env);

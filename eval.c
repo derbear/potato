@@ -162,7 +162,7 @@ struct obj* real_evaluate(struct obj* obj, struct env* env) {
     case ERROR:
       return obj;
     case DONE:
-      return obj;
+      return make_error("EOF");
     default:
       printf("ERROR: BAD OBJECT (EVAL)\n");
       if (DEBUG) {

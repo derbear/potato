@@ -50,4 +50,16 @@ struct obj* c_fgetc(struct obj* operand, struct env* env);
  */
 struct obj* c_fputc(struct obj* operand, struct env* env);
 
+/**
+ * Arguments: STRING str1, STRING str2
+ * Return: NUMBER 0 if str1 == str2, <0 if str1 < str2, >0 else
+ */
+struct obj* c_strcmp(struct obj* operand, struct env* env);
+
+/**
+ * Arguments: NUMBER exitcode
+ * Return: this function does not return!
+ */
+struct obj* c_exit(struct obj* operand, struct env* env);
+
 #endif

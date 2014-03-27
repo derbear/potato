@@ -131,11 +131,19 @@
 
 (define let (macro letf))
 
+(define exit c-exit)
+
 ;;; I/O
+
+(define eof? (func (str) (= (c-strcmp str "EOF") 0)))
 
 (define display (func (str) (c-fputs c-stdout str) nil))
 (define display-error
-  (func (str) (display "ERROR: ") (display str) (display "\n")))
+  (func (str)
+    (if (eof? str)
+        (exit 0)
+        (let ()
+             (display "ERROR: ") (display str) (display "\n")))))
 
 ;;; Main code
 
@@ -151,6 +159,6 @@
 	(repl prompt)))
     repl))
 
-(if (= 1 (length program-arguments))
+(if (= 1 (length *program-arguments*))
     ((make-repl) "> ")
-    (load (first (rest program-arguments))))
+    (load (first (rest *program-arguments*))))

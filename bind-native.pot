@@ -9,6 +9,8 @@
 (define c-fgetc (primitive (bin-get cstd-lib "c_fgetc")))
 (define c-fputc (primitive (bin-get cstd-lib "c_fputc")))
 (define c-fputs (primitive (bin-get cstd-lib "c_fputs")))
+(define c-strcmp (primitive (bin-get cstd-lib "c_strcmp")))
+(define c-exit (primitive (bin-get cstd-lib "c_exit")))
 
 (define format-lib (bin-load "./formatting.so" 0))
 (define snprintf (primitive (bin-get format-lib "c_snprintf_binding")))

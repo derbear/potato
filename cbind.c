@@ -5,6 +5,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "data.h"
 #include "util.h"
@@ -94,4 +96,17 @@ struct obj* c_fputs(struct obj* operand, struct env* env) {
   } else {
     return LIST_SECOND(operand);
   }
+}
+
+struct obj* c_strcmp(struct obj* operand, struct env* env) {
+  char* str1 = LIST_FIRST(operand)->string;
+  char* str2 = LIST_SECOND(operand)->string;
+  intptr_t result = strcmp(str1, str2);
+  return make_object(NUMBER, result);
+}
+
+struct obj* c_exit(struct obj* operand, struct env* env) {
+  int code = LIST_FIRST(operand)->number;
+  exit(code);
+  return make_object(NIL, 0); // not reached
 }
